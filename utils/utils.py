@@ -4,7 +4,7 @@ import time
 from typing import List, Set
 
 import wikitextparser as wtp
-from wikitextparser import Template
+from wikitextparser import Template, WikiLink
 
 from utils.config import get_data_path
 from utils.mgp import MGPPage
@@ -107,3 +107,20 @@ def save_continue_page(file_name: str, page_name: str):
     with open(path, "w") as f:
         f.write(page_name)
     signal.signal(signal.SIGINT, original)
+
+
+def get_categories(parsed: wtp.WikiText) -> List[WikiLink]:
+    """
+    Retrieve all categories apparent in the text. Note that this function does
+    not resolve categories added by transcluding templates. Useful when the user
+    does not want to send an extra request to the server to expand a page for all
+    categories.
+    :param text: wikitext to be analyzed
+    :return: list of categories
+    """
+    result = []
+    for link in parsed.wikilinks:
+        res = re.search("(category|cat|分类):", link.title, re.I)
+        if res is not None and res.start() == 0:
+            result.append(link)
+    return result

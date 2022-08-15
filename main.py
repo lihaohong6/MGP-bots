@@ -15,6 +15,7 @@ import wikitextparser as wtp
 import utils.login
 from bots.barn_star import auto_star
 from bots.inter_wiki import InterWikiBot
+from bots.moe_point import moe_point_bot
 from bots.vtuber_infobox import VtuberInfoboxBot
 from utils.config import get_data_path, lang_map
 from utils.logger import setup_logger
@@ -28,25 +29,31 @@ message_body = """{| style="background-color: #fdffe7; border: 1px solid #fceb92
 |}"""
 
 
-def main():
-    setup_logger()
-    get_data_path().mkdir(exist_ok=True)
+def temp():
     generator = GeneratorFactory()
     generator.handle_arg("-catr:虚拟UP主")
     lst = []
     counter = 0
+    out = get_data_path().joinpath("vtuber_list.txt")
     for page in generator.getCombinedGenerator(preload=True):
         parsed = wtp.parse(page.text)
         t = find_templates(parsed.templates, "infobox", "信息栏", loose=True)
         if len(t) == 1:
             region = t[0].get_arg("出身地区")
             if region is not None and not is_empty(region.value):
-                lst.append(region.value.strip())
+                lst.append("#" + page.title(as_link=True) + ": <nowiki>" + region.value.strip() + "</nowiki>")
         counter += 1
-        if counter % 20 == 0:
-            print(", ".join(lst))
-    # bot = VtuberInfoboxBot(generator=generator.getCombinedGenerator(preload=True))
-    # bot.run()
+        print(counter)
+        with open(out, "w") as f:
+            f.write("\n".join(lst))
+    with open(out, "w") as f:
+        f.write("\n".join(lst))
+
+
+def main():
+    setup_logger()
+    get_data_path().mkdir(exist_ok=True)
+    moe_point_bot()
 
 
 if __name__ == '__main__':
