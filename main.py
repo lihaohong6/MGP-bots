@@ -16,6 +16,7 @@ import utils.login
 from bots.barn_star import auto_star
 from bots.inter_wiki import InterWikiBot
 from bots.moe_point import moe_point_bot
+from bots.template_adder import TemplateAdderBot
 from bots.vtuber_infobox import VtuberInfoboxBot
 from utils.config import get_data_path, lang_map
 from utils.logger import setup_logger
@@ -53,7 +54,8 @@ def temp():
 def main():
     setup_logger()
     get_data_path().mkdir(exist_ok=True)
-    moe_point_bot()
+    bot = TemplateAdderBot("Hachiyananashi")
+    bot.run()
 
 
 if __name__ == '__main__':

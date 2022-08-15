@@ -4,6 +4,7 @@ import time
 from typing import List, Set
 
 import wikitextparser as wtp
+from pywikibot import Page
 from wikitextparser import Template, WikiLink
 
 from utils.config import get_data_path
@@ -77,7 +78,7 @@ def throttle(throttle_time: int):
 throttle.last_throttle = 0
 
 
-def get_links_in_template(page: MGPPage) -> List[str]:
+def get_links_in_template(page: Page) -> List[str]:
     parsed = wtp.parse(page.text)
     nav_boxes = find_templates(parsed.templates, "大家族", "Navbox", loose=True)
     pages: Set[str] = set()
@@ -112,7 +113,7 @@ def save_continue_page(file_name: str, page_name: str):
 def get_categories(parsed: wtp.WikiText) -> List[WikiLink]:
     """
     Retrieve all categories apparent in the text. Note that this function does
-    not resolve categories added by transcluding templates. Useful when the user
+    not resolve categories added by transcluding template_names. Useful when the user
     does not want to send an extra request to the server to expand a page for all
     categories.
     :param text: wikitext to be analyzed
