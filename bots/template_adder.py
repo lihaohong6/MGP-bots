@@ -22,7 +22,7 @@ def add_template_to_page(page_name: str, templates: List[str]) -> bool:
     target = -1
     for index, section in enumerate(sections):
         if section.title and ("注释" in section.title or "註釋" in section.title or
-                              "外部链接" in section.title or "外部連結" in section.title or
+                              "外部链接" in section.title or "外部連結" in section.title or "外部鏈接" in section.title or
                               "参考资料" in section.title or "參考資料" in section.title):
             target = index
             break
