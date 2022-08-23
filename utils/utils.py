@@ -172,7 +172,7 @@ def get_commons_links(text: str) -> List[str]:
     result = []
     for link in links:
         link = link[1]
-        if "." not in link or len(link.split(".")[1]) > 4:
+        if "." not in link:
             print(link, text)
         else:
             result.append(link)

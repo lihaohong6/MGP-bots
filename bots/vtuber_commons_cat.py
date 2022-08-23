@@ -60,6 +60,7 @@ def query_cats(files: Iterable[str]):
 
 def vtuber_commons_cat():
     gen = GeneratorFactory()
+    gen.handle_arg("-ns:0")
     gen.handle_arg("-catr:虚拟UP主")
     pages = get_page_list(file_name="vtuber_commons_cat_pages.txt",
                           factory=gen.getCombinedGenerator(preload=False),

@@ -13,3 +13,5 @@ minthrottle = 3
 maxthrottle = 20
 
 put_throttle = 20
+
+noisysleep = 1
