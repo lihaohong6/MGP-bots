@@ -1,7 +1,5 @@
 import webbrowser
 
-from typing import Generator, Iterable
-
 import pywikibot
 import wikitextparser as wtp
 from pywikibot import Page
@@ -10,7 +8,7 @@ from pywikibot.pagegenerators import GeneratorFactory
 from wikitextparser import WikiLink
 
 from utils.config import get_data_path
-from utils.utils import find_templates, get_categories, get_continue_page, save_continue_page
+from utils.utils import find_templates, get_categories, get_continue_page, save_continue_page, get_page_list
 
 SAVE_FILE_NAME = "moe_point.txt"
 PAGE_LIST_NAME = "moe_point_list.txt"
@@ -113,32 +111,13 @@ class MoePointBot(SingleSiteBot):
         save_continue_page(SAVE_FILE_NAME, page.title())
 
 
-def get_page_list(file_name: str, cont: str = None) -> Iterable:
-    path = get_data_path().joinpath(file_name)
-    if not path.exists():
-        gen = GeneratorFactory()
-        gen.handle_arg("-ns:0")
-        gen.handle_arg("-transcludes:T:人物信息")
-        pages = list(gen.getCombinedGenerator(preload=False))
-        with open(path, "w") as f:
-            f.write("\n".join(page.title() for page in pages))
-    if cont is not None:
-        with open(path, 'r') as f:
-            pages = f.read().split("\n")
-        for index, page_name in enumerate(pages):
-            if page_name == cont:
-                with open(path, 'w') as f:
-                    f.write("\n".join(pages[index + 1:]))
-                break
-    gen = GeneratorFactory()
-    gen.handle_arg("-file:" + str(path))
-    return gen.getCombinedGenerator(preload=True)
-
-
 def moe_point_bot():
     cont = get_continue_page(SAVE_FILE_NAME)
     if cont == "!":
         cont = None
-    gen = get_page_list(PAGE_LIST_NAME, cont)
+    gen = GeneratorFactory()
+    gen.handle_arg("-ns:0")
+    gen.handle_arg("-transcludes:T:人物信息")
+    gen = get_page_list(PAGE_LIST_NAME, gen.getCombinedGenerator(preload=False), cont)
     bot = MoePointBot(generator=gen)
     bot.run()

@@ -1,3 +1,5 @@
+import re
+import webbrowser
 from typing import List, Any
 
 import pywikibot
@@ -8,7 +10,7 @@ from pywikibot.pagegenerators import GeneratorFactory
 
 from utils.config import get_data_path
 from utils.logger import get_logger
-from utils.utils import find_templates, count_trailing_newline, get_links_in_template, throttle
+from utils.utils import find_templates, count_trailing_newline, get_links_in_template, throttle, adjust_trailing_newline
 
 
 class TemplateAdderBot(SingleSiteBot):
@@ -26,6 +28,7 @@ class TemplateAdderBot(SingleSiteBot):
         with open(page_list_path, "w") as f:
             f.write("\n".join(pages))
         gen = GeneratorFactory()
+        gen.handle_arg("-ns:0")
         gen.handle_arg("-file:" + str(page_list_path.absolute()))
         super().__init__(generator=gen.getCombinedGenerator(preload=True), **kwargs)
 
@@ -48,9 +51,17 @@ class TemplateAdderBot(SingleSiteBot):
                 target = index
                 break
         if target == -1:
-            pywikibot.error(f"Cannot find comments or external links in page {page.title()} with link {page.title()}")
-            return
-        newline_count = count_trailing_newline(sections[target - 1].string)
-        sections[target - 1].string += "\n" * max(2 - newline_count, 0) + "{{" + template + "}}\n\n"
+            for link in parsed.wikilinks:
+                if re.search(r"\[\[(cat|category|分类):", link.string, re.IGNORECASE) is not None:
+                    link.string = "{{" + template + "}}\n\n" + link.string
+                    break
+            else:
+                pywikibot.error(f"Cannot find comments or external links or categories "
+                                f"in page {page.title()} with link {page.title()}")
+                return
+        else:
+            sections[target - 1].string = adjust_trailing_newline(sections[target - 1].string) + \
+                                          "{{" + template + "}}\n\n"
+        webbrowser.open(page.full_url())
         self.userPut(page, page.text, parsed.string, summary="批量添加[[T:" + template + "]]",
                      watch="watch", botflag=True, tags="Automation tool")

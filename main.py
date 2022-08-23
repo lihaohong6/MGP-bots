@@ -14,9 +14,11 @@ import wikitextparser as wtp
 
 import utils.login
 from bots.barn_star import auto_star
+from bots.commons_image import commons_image
 from bots.inter_wiki import InterWikiBot
 from bots.moe_point import moe_point_bot
 from bots.template_adder import TemplateAdderBot
+from bots.vtuber_commons_cat import vtuber_commons_cat
 from bots.vtuber_infobox import VtuberInfoboxBot
 from utils.config import get_data_path, lang_map
 from utils.logger import setup_logger
@@ -51,11 +53,23 @@ def temp():
         f.write("\n".join(lst))
 
 
+def vocaloid_producer_templates():
+    gen = GeneratorFactory()
+    gen.handle_arg("-cat:虚拟歌手音乐人模板")
+    gen = gen.getCombinedGenerator(preload=True)
+    for p in gen:
+        if p.title(with_ns=False) == "Creuzer":
+            break
+    for p in gen:
+        bot = TemplateAdderBot(p.title(with_ns=False))
+        bot.run()
+
+
 def main():
     setup_logger()
     get_data_path().mkdir(exist_ok=True)
-    bot = TemplateAdderBot("Hachiyananashi")
-    bot.run()
+    # commons_image()
+    vtuber_commons_cat()
 
 
 if __name__ == '__main__':

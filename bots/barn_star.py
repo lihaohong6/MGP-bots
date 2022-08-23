@@ -6,6 +6,7 @@ import pywikibot
 from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.page import Revision
+from pywikibot.site import Namespace
 
 from utils.logger import get_logger
 from utils.mgp import get_page
@@ -26,7 +27,7 @@ def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_
 
 def process_page(contributions, page_name):
     page = get_page(page_name)
-    if page.exists():
+    if page.exists() and page.namespace().id == 0:
         revisions: List[Revision] = list(page.revisions(reverse=True))
         prev_bytes = 0
         for revision in revisions:

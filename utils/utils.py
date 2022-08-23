@@ -1,10 +1,13 @@
 import re
 import signal
 import time
-from typing import List, Set
+import urllib.parse
+from typing import List, Set, Iterable
 
 import wikitextparser as wtp
-from pywikibot import Page
+from pywikibot import Page, Site
+from pywikibot.pagegenerators import GeneratorFactory
+from pywikibot.tools import deprecated
 from wikitextparser import Template, WikiLink
 
 from utils.config import get_data_path
@@ -31,7 +34,7 @@ def find_templates(templates: List[Template], *names, loose: bool = False) -> Li
     result = []
     for t in templates:
         template_name = t.name
-        if ':' in template_name and re.search("T(emplate)?:", template_name) is not None:
+        if ':' in template_name and re.search("[Tt](emplate)?:", template_name) is not None:
             template_name = template_name.split(":")[1]
         for target in names:
             if str_equal(template_name, target) or (loose and str_contains(target, template_name)):
@@ -61,10 +64,14 @@ def parse_links(links: Template) -> List:
 def count_trailing_newline(text: str) -> int:
     result = 0
     index = len(text) - 1
-    while index >= 0 and text[index] == '\n':
+    while index >= 0 and text[index].isspace():
         index -= 1
-        result += 1
+        result += 1 if text[index] == '\n' else 0
     return result
+
+
+def adjust_trailing_newline(text: str, target_count: int = 2) -> str:
+    return text.rstrip() + "\n" * target_count
 
 
 def throttle(throttle_time: int):
@@ -79,6 +86,19 @@ throttle.last_throttle = 0
 
 
 def get_links_in_template(page: Page) -> List[str]:
+    parsed = wtp.parse(page.text)
+    tags = parsed.get_tags("noinclude")
+    for t in tags:
+        t.string = ""
+    text = parsed.string
+    parsed = wtp.parse(page.site.expand_text(text))
+    result = []
+    for link in parsed.wikilinks:
+        result.append(link.title)
+    return result
+
+
+def get_links_in_template_deprecated(page: Page) -> List[str]:
     parsed = wtp.parse(page.text)
     nav_boxes = find_templates(parsed.templates, "大家族", "Navbox", loose=True)
     pages: Set[str] = set()
@@ -125,3 +145,51 @@ def get_categories(parsed: wtp.WikiText) -> List[WikiLink]:
         if res is not None and res.start() == 0:
             result.append(link)
     return result
+
+
+def get_page_list(file_name: str, factory: Iterable[Page], cont: str = None, site=None) -> Iterable[Page]:
+    path = get_data_path().joinpath(file_name)
+    if not path.exists():
+        pages = list(factory)
+        with open(path, "w") as f:
+            f.write("\n".join(page.title() for page in pages))
+    if cont is not None and cont != '!':
+        with open(path, 'r') as f:
+            pages = f.read().split("\n")
+        for index, page_name in enumerate(pages):
+            if page_name == cont:
+                path = get_data_path().joinpath("temp_page_list.txt")
+                with open(path, 'w') as f:
+                    f.write("\n".join(pages[index + 1:]))
+                break
+    gen = GeneratorFactory(site=site)
+    gen.handle_arg("-file:" + str(path.absolute()))
+    return gen.getCombinedGenerator(preload=True)
+
+
+def get_commons_links(text: str) -> List[str]:
+    links = re.findall(r"img\.moegirl\.org\.cn/common(/thumb)?/./../([^\"|/ \n]+)", text)
+    result = []
+    for link in links:
+        link = link[1]
+        if "." not in link or len(link.split(".")[1]) > 4:
+            print(link, text)
+        else:
+            result.append(link)
+    return [urllib.parse.unquote(link, encoding='utf-8', errors="replace").strip() for link in result]
+
+
+@deprecated
+def parse_gallery(text: str) -> List[str]:
+    parsed = wtp.parse(text)
+    result = []
+    for tag in parsed.get_tags("gallery"):
+        content = tag.contents.strip()
+        lines = [line for line in content.split("\n") if not is_empty(line)]
+        for line in lines:
+            args = line.split("|")
+            for arg in args:
+                if "." in arg and len(arg.split(".")[-1]):
+                    pass
+    return result
+
