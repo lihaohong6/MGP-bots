@@ -19,7 +19,8 @@ exclude = {'Logo youtube.png', 'Bilibili Logo Blue.svg', 'Bilibilitv-logo.png', 
            'ChaosLive图标.png', 'Commons-emblem-success.svg', 'Emo わいのわいの.png', 'Emoji u1f3f3.svg', '粉丝勋章 舰长.png',
            'Nav-nijisanji-v20fix.png', 'Disambig gray.svg', '大萌字.svg', 'TwitCasting Icon.svg',
            'Zh conversion icon m.svg', '大萌字.svg', 'Hololivetoulogo.png', 'Nanaon-logo.svg',
-           'Ambox currentevent.svg', 'NationalismMoegirl.png', 'Information icon.svg'
+           'Ambox currentevent.svg', 'NationalismMoegirl.png', 'Information icon.svg', 'TwitterVerifiedIcon.png',
+           'Folder Hexagonal Icon.svg', 'Shengliwenhua logo.jpg'
            # from commons vtuber template images
            '早雾聖奈 头.png', '古堡龙姬（展示图）.jpg', 'Akuno Rock.jpg', '星野悦w（半身立绘-白底）.png', '黄蜂 介绍图.png',
            '犽月Kitsuki（头部立绘-表情差分-透明）.png', '瑟薇尔（半身立绘-表情差分）.png', '林檬洲Hayashi（全身立绘-1080p）.png',
@@ -308,6 +309,22 @@ def query_templates_for_exceptions():
             f.write(str(images))
             f.flush()
     print(images)
+
+
+def exclude_removed_pages():
+    # text to process
+    fin1 = open(get_data_path().joinpath("vtuber_commons_cat_result.txt"), "r")
+    # modified list with potential deletions
+    fin2 = open(get_data_path().joinpath("in2.txt"), "r")
+    name_list = fin2.read()
+    keep = True
+    for line in fin1.readlines():
+        s = re.search(r"\*\[\[(.+)]]", line)
+        if "**" not in line and s is not None:
+            page_title = s.group(1)
+            keep = ("*[[" + page_title + "]]") in name_list
+        if keep:
+            print(line.strip())
 
 
 def vtuber_commons_cat():

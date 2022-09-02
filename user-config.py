@@ -1,4 +1,4 @@
-family_files['mgp'] = 'https://zh.moegirl.org.cn/api.php'
+family_files['mgp'] = 'https://mzh.moegirl.org.cn/api.php'
 family_files['commons'] = 'https://commons.moegirl.org.cn/api.php'
 family_files['en'] = 'https://en.moegirl.org.cn/api.php'
 mylang = 'mgp'
