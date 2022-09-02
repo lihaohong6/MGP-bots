@@ -22,7 +22,8 @@ exclude = {'Logo youtube.png', 'Bilibili Logo Blue.svg', 'Bilibilitv-logo.png', 
            'Ambox currentevent.svg', 'NationalismMoegirl.png', 'Information icon.svg', 'TwitterVerifiedIcon.png',
            'Folder Hexagonal Icon.svg', 'Shengliwenhua logo.jpg'
            # from commons vtuber template images
-           '早雾聖奈 头.png', '古堡龙姬（展示图）.jpg', 'Akuno Rock.jpg', '星野悦w（半身立绘-白底）.png', '黄蜂 介绍图.png',
+                                        '早雾聖奈 头.png', '古堡龙姬（展示图）.jpg', 'Akuno Rock.jpg', '星野悦w（半身立绘-白底）.png',
+           '黄蜂 介绍图.png',
            '犽月Kitsuki（头部立绘-表情差分-透明）.png', '瑟薇尔（半身立绘-表情差分）.png', '林檬洲Hayashi（全身立绘-1080p）.png',
            '可可洛.jpg', 'Kaga sumire.png', '凛星 脸.jpg', '爱尾千影.jpg', '东鸟头.png',
            'ReVdol2 logo (small yet less blank).png', '弥塞里娅-icon1.jpg', 'WAKTAVERSE풍신.png',
@@ -325,6 +326,16 @@ def exclude_removed_pages():
             keep = ("*[[" + page_title + "]]") in name_list
         if keep:
             print(line.strip())
+
+
+def redo_excluded_files():
+    lines = open(get_data_path().joinpath("in.txt"), "r").read().split("\n")
+    out = open(get_data_path().joinpath("out.txt"), "w")
+    for line in lines:
+        fn = re.search(r"\[\[cm:File:([^|]+)\|", line)
+        if fn and 'File:' + fn.group(1) in exclude:
+            continue
+        out.write(line + "\n")
 
 
 def vtuber_commons_cat():
