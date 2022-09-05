@@ -1,3 +1,5 @@
+family_files['lib'] = 'https://library.moegirl.org.cn/api.php'
+family_files['zh'] = 'https://zh.moegirl.org.cn/api.php'
 family_files['mgp'] = 'https://mzh.moegirl.org.cn/api.php'
 family_files['commons'] = 'https://commons.moegirl.org.cn/api.php'
 family_files['en'] = 'https://en.moegirl.org.cn/api.php'
@@ -9,7 +11,7 @@ usernames['mgp']['*'] = 'Lihaohong'
 usernames['en']['*'] = 'Lihaohong'
 password_file = "user-password.py"
 
-minthrottle = 5
+minthrottle = 2
 maxthrottle = 20
 
 put_throttle = 20

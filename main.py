@@ -3,8 +3,10 @@
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import re
+import sys
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Callable
 
 import pywikibot
 from pywikibot import Page
@@ -16,7 +18,10 @@ import utils.login
 from bots.barn_star import auto_star
 from bots.commons_image import commons_image
 from bots.inter_wiki import InterWikiBot
+from bots.link_adjust import link_adjust
+from bots.mass_cat import mass_cat
 from bots.moe_point import moe_point_bot
+from bots.move_image import move_image
 from bots.template_adder import TemplateAdderBot
 from bots.vtuber_commons_cat import vtuber_commons_cat
 from bots.vtuber_infobox import VtuberInfoboxBot
@@ -68,8 +73,20 @@ def vocaloid_producer_templates():
 def main():
     setup_logger()
     get_data_path().mkdir(exist_ok=True)
+    command = sys.argv[1].strip()
+    bots: Dict[str, Callable] = {
+        'mass_cat': mass_cat,
+        'link_adjust': link_adjust,
+        'move_image': move_image
+    }
+    if command in bots:
+        bots[command]()
+    else:
+        print("Command " + command + " not found.")
+        print("Possible options " + ", ".join(bots.keys()))
     # commons_image()
-    vtuber_commons_cat()
+    # vtuber_commons_cat()
+    # move_image()
 
 
 if __name__ == '__main__':

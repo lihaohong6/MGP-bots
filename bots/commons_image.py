@@ -12,6 +12,7 @@ from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 from typing import List, Dict, Set, Tuple, Iterable
 
 from utils.config import get_data_path
+from utils.sites import cm, mgp
 from utils.utils import get_page_list, get_continue_page, save_continue_page, count_trailing_newline, \
     adjust_trailing_newline
 
@@ -46,8 +47,6 @@ def deprecated():
         sleep(3)
 
 
-mgp = pwb.Site(fam="mgp")
-commons = pwb.Site(fam="commons")
 MGP_CONTINUE_FILE_NAME = "commons_image_continue.txt"
 COMMONS_CONTINUE_FILE_NAME = "commons_image_file_continue.txt"
 TEMP_PROGRESS_FILE = get_data_path().joinpath("commons_image_temp_progress.pickle")
@@ -121,7 +120,7 @@ def filter_page_names(names) -> Tuple[List[str], List[str]]:
     result = []
     problematic = []
     for name in names:
-        p = Page(source=commons, title="File:" + name)
+        p = Page(source=cm, title="File:" + name)
         try:
             t = p.title()
             result.append(name)
@@ -148,13 +147,13 @@ def commons_image():
     print(mgp_pages)
     pages = []
     for s in page_names:
-        p = Page(source=commons, title="File:" + s)
+        p = Page(source=cm, title="File:" + s)
         pages.append(p)
         progress[p.title()] = progress[s]
     pages = get_page_list("commons_image_file_list.txt",
                           pages,
                           cont=get_continue_page(COMMONS_CONTINUE_FILE_NAME),
-                          site=commons)
+                          site=cm)
     queue = []
     for page in pages:
         if "非链入使用" not in page.text:
