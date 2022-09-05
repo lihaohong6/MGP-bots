@@ -106,7 +106,8 @@ def link_adjust() -> None:
         result = process_text(p.text)
         if result != p.text:
             p.text = result
-            p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot', watch='nochange')
+            p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',
+                   botflag=True, watch='nochange')
 
 
 def link_adjust_test():
