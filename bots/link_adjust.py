@@ -48,8 +48,7 @@ def expand_b23(text: str) -> str:
 def process_text_bb(text: str) -> str:
     text = re.sub(r'bilibili\.com' + LINK_END,
                   shorten_bb_link,
-                  text,
-                  flags=re.ASCII)
+                  text)
     text = expand_b23(text)
     return text
 
