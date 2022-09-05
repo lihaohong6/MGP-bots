@@ -1,20 +1,18 @@
 import pickle
-from re import findall, Match
+from re import findall
 from time import sleep
+from typing import List, Dict, Set, Tuple, Iterable
 
-import pywikibot
 import pywikibot as pwb
 import requests
 import wikitextparser as wtp
 from pywikibot import pagegenerators, Page
 from pywikibot.exceptions import InvalidTitleError
-from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
-from typing import List, Dict, Set, Tuple, Iterable
+from pywikibot.pagegenerators import GeneratorFactory
 
 from utils.config import get_data_path
 from utils.sites import cm, mgp
-from utils.utils import get_page_list, get_continue_page, save_continue_page, count_trailing_newline, \
-    adjust_trailing_newline
+from utils.utils import get_page_list, get_continue_page, save_continue_page, adjust_trailing_newline
 
 
 def deprecated():

@@ -14,24 +14,32 @@ from bots.vtuber_commons_cat import vtuber_commons_cat
 from utils.config import get_data_path
 from utils.logger import setup_logger
 
+bots: Dict[str, Callable] = {
+    'mass_cat': mass_cat,
+    'link_adjust': link_adjust,
+    'move_image': move_image,
+    'commons_image': commons_image,
+    'vtuber_commons_cat': vtuber_commons_cat,
+    'add_template': add_template
+}
+
+
+def print_help():
+    print("Possible options: " + ", ".join(bots.keys()))
+    exit(0)
+
 
 def main():
     setup_logger()
     get_data_path().mkdir(exist_ok=True)
+    if len(sys.argv) == 1:
+        print_help()
     command = sys.argv[1].strip()
-    bots: Dict[str, Callable] = {
-        'mass_cat': mass_cat,
-        'link_adjust': link_adjust,
-        'move_image': move_image,
-        'commons_image': commons_image,
-        'vtuber_commons_cat': vtuber_commons_cat,
-        'add_template': add_template()
-    }
     if command in bots:
         bots[command]()
     else:
         print("Command " + command + " not found.")
-        print("Possible options: " + ", ".join(bots.keys()))
+        print_help()
 
 
 if __name__ == '__main__':

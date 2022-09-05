@@ -13,6 +13,7 @@ from utils.utils import count_trailing_newline, is_empty, get_continue_page, sav
 
 
 def get_lang_links(page: Page, lang_filter: str) -> List[WikiLink]:
+    # FIXME: use api to batch request language links
     try:
         expanded = page.expand_text()
     except SiteDefinitionError as e:
