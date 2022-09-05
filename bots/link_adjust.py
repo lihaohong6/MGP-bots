@@ -1,27 +1,34 @@
 import re
+import urllib
 from re import Match
-from typing import AnyStr, Iterable, List
+from typing import AnyStr, Iterable, List, Callable
 
 import pywikibot
 import requests
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlunparse
 
-LINK_END = r"[^ 　\]{<|]*"
+LINK_END = r"[^ 　\]{<|\n]*"
 
 
-def get_link_params(link: str, targets: List[str], prepend: str = '?') -> str:
+def remove_link_params(link: str, predicate: Callable[[str], bool]) -> str:
     parsed = urlparse(link)
     params = parse_qs(parsed.query, keep_blank_values=False)
-    result = "&".join(f"{param}={value[0]}" for param, value in params.items() if param in targets)
-    if result.strip() != "":
-        return prepend + result
-    return ""
+    parsed = list(parsed)
+    parsed[4] = "&".join(f"{param}={value[0]}"
+                         for param, value in params.items()
+                         if predicate(param))
+    result = urlunparse(parsed)
+    if result.strip() == link.strip():
+        return link
+    if '/' == result[-1]:
+        result = result[:-1]
+    return result
 
 
 def shorten_bb_link(match: Match):
-    return match.group(1) + get_link_params(match.group(0), targets=['t', 'p'], prepend="?")
+    return remove_link_params(match.group(0), predicate=lambda s: s in ['t', 'p'])
 
 
 def expand_b23(text: str) -> str:
@@ -35,16 +42,8 @@ def expand_b23(text: str) -> str:
 
 
 def process_text_bb(text: str) -> str:
-    text = re.sub(r'(www\.bilibili\.com/video/BV[0-9A-Za-z]{10})' + LINK_END,
+    text = re.sub(r'bilibili\.com' + LINK_END,
                   shorten_bb_link,
-                  text,
-                  flags=re.ASCII)
-    text = re.sub(r'(www\.bilibili\.com/read/cv[0-9]+)' + LINK_END,
-                  shorten_bb_link,
-                  text,
-                  flags=re.ASCII)
-    text = re.sub(r'((?:live|t|space)\.bilibili\.com/[0-9]+)' + LINK_END,
-                  r'\1',
                   text,
                   flags=re.ASCII)
     text = expand_b23(text)
@@ -52,16 +51,16 @@ def process_text_bb(text: str) -> str:
 
 
 def shorten_yt_link(match: Match) -> str:
-    return "www.youtube.com/watch?v=" + match.group(1) + \
-           get_link_params(match.group(0), targets=['t'], prepend='&')
+    new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
+    return remove_link_params(new_url, lambda s: s in ['t', 'v'])
 
 
 def process_text_yt(text: str) -> str:
-    text = re.sub(r'youtu\.be/([\w-]+)' + LINK_END,
+    text = re.sub(r'youtu\.be/([\w-]+)' + '(' + LINK_END + ')',
                   shorten_yt_link,
                   text,
                   flags=re.ASCII)
-    text = re.sub(r'www\.youtube\.com/watch\?v=([\w-]+)' + LINK_END,
+    text = re.sub(r'www\.youtube\.com/watch\?v=([\w-]+)' + '(' + LINK_END + ')',
                   shorten_yt_link,
                   text,
                   flags=re.ASCII)
@@ -84,13 +83,19 @@ def process_text(text: str) -> str:
 BOT_MESSAGE = "使用[[U:Lihaohong/链接清理机器人|机器人]]"
 
 
-def link_adjust():
+def link_adjust() -> None:
+    """
+    链接修复程序入口
+    :return: None
+    """
     for p in search_pages('spm_id_from', 'b23.tv', 'spm_id_from', 'from_spmid',
                           'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag', 'share_times',
                           'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
                           'youtu.be'):
-        p.text = process_text(p.text)
-        p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot', watch='nochange')
+        result = process_text(p.text)
+        if result != p.text:
+            p.text = result
+            p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot', watch='nochange')
 
 
 def link_adjust_test():

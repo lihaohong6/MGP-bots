@@ -29,6 +29,10 @@ class TestLinkAdjust(TestCase):
         url = "https://www.bilibili.com/read/cv3434476?from=search&spm_id_from=333.337.0.0"
         self.assertEqual("https://www.bilibili.com/read/cv3434476",
                          process_text_bb(url))
+        # 空间
+        url = "https://space.bilibili.com/39260796/article?from=search"
+        self.assertEqual("https://space.bilibili.com/39260796/article",
+                         process_text_bb(url))
         # 处理b23.tv
         url = "https://b23.tv/t8BP0j"
         self.assertEqual("https://www.bilibili.com/video/BV1AV411h7jb?p=1",
@@ -71,7 +75,11 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 
 车重1151KG 推重比126kg·m[https://www.bilibili.com/read/cv3434476]
 
-[https://www.bilibili.com/video/BV1Lt4y1L7Je]"""
+[https://www.bilibili.com/video/BV1Lt4y1L7Je]
+
+* 中国版官网：https://bml.bilibili.com/sp
+* 海外版官网：https://www.bmlsp.bilibili.com/
+<references/>"""
 
         original = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://b23.tv/iMhxQi 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
 
@@ -91,5 +99,9 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 
 车重1151KG 推重比126kg·m[https://www.bilibili.com/read/cv3434476?from=search&spm_id_from=333.337.0.0]
 
-[https://www.bilibili.com/video/BV1Lt4y1L7Je/?spm_id_from=333.788.recommend_more_video.-1&vd_source=52e727c44f740afa0d193be4aadcd11c]"""
+[https://www.bilibili.com/video/BV1Lt4y1L7Je/?spm_id_from=333.788.recommend_more_video.-1&vd_source=52e727c44f740afa0d193be4aadcd11c]
+
+* 中国版官网：https://bml.bilibili.com/sp?spm_id_from=333.999.rich-text.link.click
+* 海外版官网：https://www.bmlsp.bilibili.com/
+<references/>"""
         self.assertEqual(expected, process_text(original))
