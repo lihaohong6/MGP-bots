@@ -12,13 +12,13 @@ from urllib.parse import parse_qs, urlparse, urlunparse
 LINK_END = r"[^ 　\]{<|\n]*"
 
 
-def remove_link_params(link: str, predicate: Callable[[str], bool]) -> str:
+def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
     parsed = urlparse(link)
     params = parse_qs(parsed.query, keep_blank_values=False)
     parsed = list(parsed)
     parsed[4] = "&".join(f"{param}={value[0]}"
                          for param, value in params.items()
-                         if predicate(param))
+                         if predicate(param, value[0]))
     result = urlunparse(parsed)
     if result.strip() == link.strip():
         return link
@@ -28,7 +28,7 @@ def remove_link_params(link: str, predicate: Callable[[str], bool]) -> str:
 
 
 def shorten_bb_link(match: Match):
-    return remove_link_params(match.group(0), predicate=lambda s: s in ['t', 'p'])
+    return remove_link_params(match.group(0), predicate=lambda k, v: k == 't' or (k == 'p' and v != '1'))
 
 
 def expand_b23(text: str) -> str:
@@ -52,7 +52,7 @@ def process_text_bb(text: str) -> str:
 
 def shorten_yt_link(match: Match) -> str:
     new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
-    return remove_link_params(new_url, lambda s: s in ['t', 'v'])
+    return remove_link_params(new_url, lambda s, _: s in ['t', 'v'])
 
 
 def process_text_yt(text: str) -> str:
@@ -88,10 +88,13 @@ def link_adjust() -> None:
     链接修复程序入口
     :return: None
     """
-    for p in search_pages('spm_id_from', 'b23.tv', 'spm_id_from', 'from_spmid',
+    for p in search_pages('spm_id_from',
+                          'b23.tv',
+                          'from_spmid',
                           'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag', 'share_times',
                           'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
-                          'youtu.be'):
+                          'youtu.be'
+                          ):
         result = process_text(p.text)
         if result != p.text:
             p.text = result

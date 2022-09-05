@@ -5,12 +5,19 @@ from bots.link_adjust import process_text_bb, process_text_yt, process_text
 
 class TestLinkAdjust(TestCase):
     def test_process_text_bb(self):
-        # 去除t=1和p=1外的所有参数
+        # 去除t=1和外的所有参数
         url = "https://www.bilibili.com/video/BV1bW4y1q79d?" \
               "spm_id_from=333.851.b_7265636f6d6d656e64.1&" \
               "t=1&vd_source=4283250c27f32cce49b24b0f6e6c149d&p=1"
         self.assertEqual(
-            "https://www.bilibili.com/video/BV1bW4y1q79d?t=1&p=1",
+            "https://www.bilibili.com/video/BV1bW4y1q79d?t=1",
+            process_text_bb(url))
+        # t=1, p=3，因此p不会被去掉
+        url = "https://www.bilibili.com/video/BV1bW4y1q79d?" \
+              "spm_id_from=333.851.b_7265636f6d6d656e64.1&" \
+              "t=1&vd_source=4283250c27f32cce49b24b0f6e6c149d&p=3"
+        self.assertEqual(
+            "https://www.bilibili.com/video/BV1bW4y1q79d?t=1&p=3",
             process_text_bb(url))
         # 无更改
         url = "https://www.bilibili.com/video/BV1bW4y1q79d"
@@ -35,7 +42,7 @@ class TestLinkAdjust(TestCase):
                          process_text_bb(url))
         # 处理b23.tv
         url = "https://b23.tv/t8BP0j"
-        self.assertEqual("https://www.bilibili.com/video/BV1AV411h7jb?p=1",
+        self.assertEqual("https://www.bilibili.com/video/BV1AV411h7jb",
                          process_text_bb(url))
 
     def test_process_text_yt(self):
@@ -57,15 +64,15 @@ class TestLinkAdjust(TestCase):
                          process_text_yt(url))
 
     def test_long(self):
-        expected = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://www.bilibili.com/video/BV1Jz4y1U7BA?p=1 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
+        expected = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://www.bilibili.com/video/BV1Jz4y1U7BA 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
 
-母亲：樱井文绘<ref>[https://www.bilibili.com/video/BV1C3411k7s9?p=1]</ref>
+母亲：樱井文绘<ref>[https://www.bilibili.com/video/BV1C3411k7s9]</ref>
 
 相关内容可见[https://www.bilibili.com/video/BV1Yg411y7xN 《深空之眼》拾梦绘卷|最优秀的女仆]
 
 2022年8月19日[[HIKARI FIELD]]宣布将制作国际中文版，并公开了中文版开场动画<ref>{{Cite web|title=《苍之彼方的四重奏EXTRA2》国际中文版制作决定！|url=https://t.bilibili.com/696063187661881477|accessdate=2022-08-19|date=2022-08-19|language=zh}}</ref>，预计于2022年内发售。
 
-<ref>https://www.bilibili.com/video/BV1Us411v78x?t=10&p=1</ref>
+<ref>https://www.bilibili.com/video/BV1Us411v78x?t=10&p=5</ref>
 
 2015年8月31日发布首个[https://www.youtube.com/watch?v=MILDduR_k9c 试听曲]
 
@@ -89,7 +96,7 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 
 2022年8月19日[[HIKARI FIELD]]宣布将制作国际中文版，并公开了中文版开场动画<ref>{{Cite web|title=《苍之彼方的四重奏EXTRA2》国际中文版制作决定！|url=https://t.bilibili.com/696063187661881477?spm_id_from=333.999.0.0|accessdate=2022-08-19|date=2022-08-19|language=zh}}</ref>，预计于2022年内发售。
 
-<ref>https://www.bilibili.com/video/BV1Us411v78x?spm_id_from=333.337.search-card.all.click&vd_source=99b3fa924294d33ca365ef499286ea01&t=10&p=1</ref>
+<ref>https://www.bilibili.com/video/BV1Us411v78x?spm_id_from=333.337.search-card.all.click&vd_source=99b3fa924294d33ca365ef499286ea01&t=10&p=5</ref>
 
 2015年8月31日发布首个[https://www.youtube.com/watch?v=MILDduR_k9c 试听曲]
 
