@@ -1,18 +1,22 @@
 import re
-import urllib
 from re import Match
-from typing import AnyStr, Iterable, List, Callable
+from typing import Iterable, Callable
+from urllib.parse import parse_qs, urlparse, urlunparse
 
-import pywikibot
 import requests
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory
-from urllib.parse import parse_qs, urlparse, urlunparse
 
 LINK_END = r"[^ 　\]{<|\n]*"
 
 
 def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
+    """
+    从链接中移除无用参数
+    :param link: 链接
+    :param predicate: 函数，用于判断参数是否要保留
+    :return: 移除参数后的链接
+    """
     parsed = urlparse(link)
     params = parse_qs(parsed.query, keep_blank_values=False)
     parsed = list(parsed)
@@ -68,6 +72,11 @@ def process_text_yt(text: str) -> str:
 
 
 def search_pages(*search_strings) -> Iterable[Page]:
+    """
+    搜索主名字空间下，源代码有任意关键词的条目
+    :param search_strings: 关键词列表
+    :return: Page对象
+    """
     from utils.sites import mgp
     gen = GeneratorFactory(site=mgp)
     gen.handle_arg('-ns:0')
@@ -102,6 +111,10 @@ def link_adjust() -> None:
 
 
 def link_adjust_test():
+    """
+    使用沙盒测试
+    :return: None
+    """
     from utils.sites import mgp
     sandbox = Page(source=mgp, title="Help:沙盒")
     sandbox.text = process_text(sandbox.text)

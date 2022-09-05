@@ -1,4 +1,5 @@
 import re
+import sys
 import webbrowser
 from typing import List, Any
 
@@ -65,3 +66,9 @@ class TemplateAdderBot(SingleSiteBot):
         webbrowser.open(page.full_url())
         self.userPut(page, page.text, parsed.string, summary="批量添加[[T:" + template + "]]",
                      watch="watch", botflag=True, tags="Automation tool")
+
+
+def add_template():
+    name = sys.argv[2]
+    bot = TemplateAdderBot(name)
+    bot.run()
