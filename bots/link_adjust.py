@@ -50,7 +50,10 @@ USELESS_BB_PARAMS = {
     # https://space.bilibili.com/842470/channel/seriesdetail?sid=954878&ctype=0
     'ftype', 'otype', 'ctype',
     # https://b23.tv/jf8kgOH
-    'share_from', 'is_story_h5'}
+    'share_from', 'is_story_h5',
+    # https://b23.tv/dl5XUl9
+    'mid'
+    }
 
 
 def shorten_bb_link(match: Match):
@@ -70,7 +73,11 @@ def shorten_bb_link(match: Match):
 
 def expand_b23(text: str) -> str:
     def fetch_real_url(match: Match):
-        response = requests.get(match.group(0))
+        url = match.group(0)
+        response = requests.get(url)
+        if response.url.strip() == url.strip():
+            pywikibot.error("Link " + url + " has problematic response.")
+            return url
         return process_text_bb(response.url)
 
     return re.sub(r'https?://b23\.tv/' + LINK_END,
