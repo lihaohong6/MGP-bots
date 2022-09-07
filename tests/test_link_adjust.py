@@ -63,6 +63,14 @@ class TestLinkAdjust(TestCase):
         self.assertEqual("https://www.youtube.com/watch?v=be8wqUqDhFU",
                          process_text_yt(url))
 
+    def test_special(self):
+        url = "b站直播间的链接是https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1哦"
+        self.assertEqual("b站直播间的链接是https://live.bilibili.com/21996804哦",
+                         process_text_bb(url))
+        url = "[https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1{{lj|あああ}}]"
+        self.assertEqual("[https://live.bilibili.com/21996804{{lj|あああ}}]",
+                         process_text_bb(url))
+
     def test_long(self):
         expected = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://www.bilibili.com/video/BV1Jz4y1U7BA 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
 
@@ -85,7 +93,7 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 [https://www.bilibili.com/video/BV1Lt4y1L7Je]
 
 * 中国版官网：https://bml.bilibili.com/sp
-* 海外版官网：https://www.bmlsp.bilibili.com/
+* 海外版官网：https://www.bmlsp.bilibili.com/ですわ
 <references/>"""
 
         original = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://b23.tv/iMhxQi 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
@@ -109,6 +117,6 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 [https://www.bilibili.com/video/BV1Lt4y1L7Je/?spm_id_from=333.788.recommend_more_video.-1&vd_source=52e727c44f740afa0d193be4aadcd11c]
 
 * 中国版官网：https://bml.bilibili.com/sp?spm_id_from=333.999.rich-text.link.click
-* 海外版官网：https://www.bmlsp.bilibili.com/
+* 海外版官网：https://www.bmlsp.bilibili.com/ですわ
 <references/>"""
         self.assertEqual(expected, process_text(original))
