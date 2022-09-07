@@ -1,8 +1,9 @@
 import re
 from re import Match
-from typing import Iterable, Callable
+from typing import Iterable, Callable, Dict
 from urllib.parse import parse_qs, urlparse, urlunparse
 
+import pywikibot
 import requests
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory
@@ -32,7 +33,18 @@ def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
 
 
 def shorten_bb_link(match: Match):
-    return remove_link_params(match.group(0), predicate=lambda k, v: k == 't' or (k == 'p' and v != '1'))
+    link = match.group(0)
+    if "read/mobile" in link:
+        parsed = urlparse(link)
+        params: Dict = parse_qs(parsed.query, keep_blank_values=False)
+        if 'id' in params:
+            article_id = params['id'][0]
+        else:
+            article_id = re.search("/([0-9]+)", parsed.path).group(1)
+        return "bilibili.com/read/cv" + article_id
+
+    return remove_link_params(link,
+                              predicate=lambda k, v: k in ['t', 'bvid', 'id'] or (k == 'p' and v != '1'))
 
 
 def expand_b23(text: str) -> str:
@@ -103,7 +115,11 @@ def link_adjust() -> None:
                           'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
                           'youtu.be'
                           ):
-        result = process_text(p.text)
+        try:
+            result = process_text(p.text)
+        except Exception as e:
+            pywikibot.error(p.title() + ": " + str(e))
+            continue
         if result != p.text:
             p.text = result
             p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',

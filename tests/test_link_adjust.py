@@ -36,6 +36,12 @@ class TestLinkAdjust(TestCase):
         url = "https://www.bilibili.com/read/cv3434476?from=search&spm_id_from=333.337.0.0"
         self.assertEqual("https://www.bilibili.com/read/cv3434476",
                          process_text_bb(url))
+        url = "https://www.bilibili.com/read/mobile?id=4574032"
+        self.assertEqual("https://www.bilibili.com/read/cv4574032",
+                         process_text_bb(url))
+        url = "https://www.bilibili.com/read/mobile/10424161"
+        self.assertEqual("https://www.bilibili.com/read/cv10424161",
+                         process_text_bb(url))
         # 空间
         url = "https://space.bilibili.com/39260796/article?from=search"
         self.assertEqual("https://space.bilibili.com/39260796/article",
@@ -62,6 +68,11 @@ class TestLinkAdjust(TestCase):
         url = "https://www.youtube.com/watch?v=be8wqUqDhFU&feature=youtu.be"
         self.assertEqual("https://www.youtube.com/watch?v=be8wqUqDhFU",
                          process_text_yt(url))
+
+    def test_keep(self):
+        urls = ["https://www.bilibili.com/festival/2022bnj?bvid=BV1tR4y1j7aZ"]
+        for u in urls:
+            self.assertEqual(u, process_text_bb(u))
 
     def test_special(self):
         url = "b站直播间的链接是https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1哦"
