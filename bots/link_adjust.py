@@ -8,7 +8,7 @@ import requests
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory
 
-LINK_END = r"""((?![ 　\]{<|\n])[ -~])*"""
+LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
 
 
 def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:

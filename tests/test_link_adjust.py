@@ -49,10 +49,10 @@ class TestLinkAdjust(TestCase):
         url = "https://b23.tv/jf8kgOH"
         self.assertEqual("https://www.bilibili.com/video/BV1tY4y1s7JE",
                          process_text_bb(url))
+        # 空间
         url = "https://b23.tv/cYG0K8"
         self.assertEqual("https://space.bilibili.com/674746763",
                          process_text_bb(url))
-        # 空间
         url = "https://b23.tv/uD6S24"
         self.assertEqual("https://space.bilibili.com/2023988132",
                          process_text_bb(url))
@@ -98,6 +98,9 @@ class TestLinkAdjust(TestCase):
                          process_text_bb(url))
         url = "[https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1{{lj|あああ}}]"
         self.assertEqual("[https://live.bilibili.com/21996804{{lj|あああ}}]",
+                         process_text_bb(url))
+        url = "{{黑幕|https://b23.tv/cYG0K8}}"
+        self.assertEqual("{{黑幕|https://space.bilibili.com/674746763}}",
                          process_text_bb(url))
 
     def test_long(self):
