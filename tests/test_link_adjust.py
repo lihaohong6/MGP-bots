@@ -51,6 +51,9 @@ class TestLinkAdjust(TestCase):
         url = "https://b23.tv/t8BP0j"
         self.assertEqual("https://www.bilibili.com/video/BV1AV411h7jb",
                          process_text_bb(url))
+        url = "https://b23.tv/jf8kgOH"
+        self.assertEqual("https://www.bilibili.com/video/BV1tY4y1s7JE",
+                         process_text_bb(url))
         # 空间
         url = "https://b23.tv/uD6S24"
         self.assertEqual("https://space.bilibili.com/2023988132",

@@ -45,7 +45,9 @@ USELESS_BB_PARAMS = {
     # https://space.bilibili.com/103835/favlist?fid=61736335&ftype=create
     # https://www.bilibili.com/medialist/play/ml45827500/BV1Zs411o74K?oid=899641&otype=2
     # https://space.bilibili.com/842470/channel/seriesdetail?sid=954878&ctype=0
-    'ftype', 'otype', 'ctype'}
+    'ftype', 'otype', 'ctype',
+    # https://b23.tv/jf8kgOH
+    'share_from', 'is_story_h5'}
 
 
 def shorten_bb_link(match: Match):
@@ -135,6 +137,7 @@ def link_adjust() -> None:
                           'from_spmid',
                           'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag', 'share_times',
                           'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
+                          'is_story_h5', 'share_from'
                           'youtu.be'
                           ):
         try:
