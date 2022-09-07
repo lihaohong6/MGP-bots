@@ -44,7 +44,7 @@ def shorten_bb_link(match: Match):
         return "bilibili.com/read/cv" + article_id
 
     return remove_link_params(link,
-                              predicate=lambda k, v: k in ['t', 'bvid', 'id'] or (k == 'p' and v != '1'))
+                              predicate=lambda k, v: k in ['t', 'bvid', 'id', 'sid'] or (k == 'p' and v != '1'))
 
 
 def expand_b23(text: str) -> str:
