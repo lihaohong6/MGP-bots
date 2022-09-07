@@ -32,6 +32,22 @@ def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
     return result
 
 
+USELESS_BB_PARAMS = {
+    # from C8H17OH-bot
+    'from', 'seid', 'spm_id_from', 'vd_source', 'from_spmid', 'referfrom',
+    'bilifrom', 'share_source', 'share_medium', 'share_plat', 'share_session_id',
+    'share_tag', 'share_times', 'timestamp', 'ts', 'from_source', 'broadcast_type', 'is_room_feed',
+    # from mall.bilibili.com link:
+    # https://mall.bilibili.com/detail.html?from=mall_home_search&hasBack=false&itemsId=10040825&jumpLinkType=0
+    # &msource=link&noTitleBar=1&share_medium=android&share_plat=android&share_source=COPY&share_tag=s_i
+    # &timestamp=1636345640&unique_k=XlSwmO#noReffer=true&goFrom=na
+    'msource', 'noTitleBar', 'hasBack', 'jumpLinkType', 'timestamp', 'unique_k', 'goFrom',
+    # https://space.bilibili.com/103835/favlist?fid=61736335&ftype=create
+    # https://www.bilibili.com/medialist/play/ml45827500/BV1Zs411o74K?oid=899641&otype=2
+    # https://space.bilibili.com/842470/channel/seriesdetail?sid=954878&ctype=0
+    'ftype', 'otype', 'ctype'}
+
+
 def shorten_bb_link(match: Match):
     link = match.group(0)
     if "read/mobile" in link:
@@ -42,9 +58,9 @@ def shorten_bb_link(match: Match):
         else:
             article_id = re.search("/([0-9]+)", parsed.path).group(1)
         return "bilibili.com/read/cv" + article_id
-
     return remove_link_params(link,
-                              predicate=lambda k, v: k in ['t', 'bvid', 'id', 'sid'] or (k == 'p' and v != '1'))
+                              predicate=lambda k, v: k not in USELESS_BB_PARAMS
+                                                     and (k != 'p' or v != '1'))
 
 
 def expand_b23(text: str) -> str:
@@ -65,9 +81,12 @@ def process_text_bb(text: str) -> str:
     return text
 
 
+USELESS_YT_PARAMS = {'feature', 'ab_channel'}
+
+
 def shorten_yt_link(match: Match) -> str:
     new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
-    return remove_link_params(new_url, lambda s, _: s in ['t', 'v'])
+    return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS)
 
 
 def process_text_yt(text: str) -> str:
@@ -93,6 +112,9 @@ def search_pages(*search_strings) -> Iterable[Page]:
     gen.handle_arg('-ns:0')
     for s in search_strings:
         gen.handle_arg(f'-search:insource:"{s}"')
+    u = mgp.username()
+    if "bot" in u.lower() or "机" in u:
+        gen.handle_arg(f'')
     return gen.getCombinedGenerator(preload=True)
 
 

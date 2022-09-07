@@ -47,8 +47,19 @@ class TestLinkAdjust(TestCase):
         self.assertEqual("https://space.bilibili.com/39260796/article",
                          process_text_bb(url))
         # 处理b23.tv
+        # 视频
         url = "https://b23.tv/t8BP0j"
         self.assertEqual("https://www.bilibili.com/video/BV1AV411h7jb",
+                         process_text_bb(url))
+        # 空间
+        url = "https://b23.tv/uD6S24"
+        self.assertEqual("https://space.bilibili.com/2023988132",
+                         process_text_bb(url))
+        # 会员购
+        url = "https://mall.bilibili.com/detail.html?&itemsId=10040825&jumpLinkType=0&msource=link&noTitleBar=1" \
+              "&share_medium=android&share_plat=android&share_source=COPY&share_tag=s_i&timestamp=1636345640" \
+              "&unique_k=XlSwmO#noReffer=true&goFrom=na"
+        self.assertEqual("https://mall.bilibili.com/detail.html?itemsId=10040825#noReffer=true&goFrom=na",
                          process_text_bb(url))
 
     def test_process_text_yt(self):
@@ -70,7 +81,10 @@ class TestLinkAdjust(TestCase):
                          process_text_yt(url))
 
     def test_keep(self):
-        urls = ["https://www.bilibili.com/festival/2022bnj?bvid=BV1tR4y1j7aZ"]
+        urls = ["https://www.bilibili.com/festival/2022bnj?bvid=BV1tR4y1j7aZ",
+                "https://space.bilibili.com/525455041/channel/collectiondetail?sid=125609 ",
+                "https://www.youtube.com/watch?v=n8PNy1EvsB4&list=PLPUGXakMkjRH0PwmVsFqWlBqHDq1yLurm",
+                "https://www.bilibili.com/medialist/play/103835?business=space_series&business_id=901366&desc=1"]
         for u in urls:
             self.assertEqual(u, process_text_bb(u))
 
