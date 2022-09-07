@@ -19,8 +19,11 @@ def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
     :return: 移除参数后的链接
     """
     parsed = urlparse(link)
-    params = parse_qs(parsed.query, keep_blank_values=False)
+    params = parse_qs(parsed.query, keep_blank_values=True)
     parsed = list(parsed)
+    # avoid unnecessary changes
+    if all(predicate(param, value[0]) for param, value in params.items()):
+        return link
     parsed[4] = "&".join(f"{param}={value[0]}"
                          for param, value in params.items()
                          if predicate(param, value[0]))
@@ -36,7 +39,7 @@ USELESS_BB_PARAMS = {
     # from C8H17OH-bot
     'from', 'seid', 'spm_id_from', 'vd_source', 'from_spmid', 'referfrom',
     'bilifrom', 'share_source', 'share_medium', 'share_plat', 'share_session_id',
-    'share_tag', 'share_times', 'timestamp', 'ts', 'from_source', 'broadcast_type', 'is_room_feed',
+    'share_tag', 'share_times', 'timestamp', 'bbid', 'ts', 'from_source', 'broadcast_type', 'is_room_feed',
     # from mall.bilibili.com link:
     # https://mall.bilibili.com/detail.html?from=mall_home_search&hasBack=false&itemsId=10040825&jumpLinkType=0
     # &msource=link&noTitleBar=1&share_medium=android&share_plat=android&share_source=COPY&share_tag=s_i

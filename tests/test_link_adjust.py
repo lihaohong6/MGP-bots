@@ -19,11 +19,6 @@ class TestLinkAdjust(TestCase):
         self.assertEqual(
             "https://www.bilibili.com/video/BV1bW4y1q79d?t=1&p=3",
             process_text_bb(url))
-        # 无更改
-        url = "https://www.bilibili.com/video/BV1bW4y1q79d"
-        self.assertEqual(url, process_text_bb(url))
-        url = "https://www.bilibili.com/video/BV1bW4y1q79d?t=123"
-        self.assertEqual(url, process_text_bb(url))
         # 直播
         url = "https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1&spm_id_from=333.999.0.0"
         self.assertEqual("https://live.bilibili.com/21996804",
@@ -53,6 +48,9 @@ class TestLinkAdjust(TestCase):
                          process_text_bb(url))
         url = "https://b23.tv/jf8kgOH"
         self.assertEqual("https://www.bilibili.com/video/BV1tY4y1s7JE",
+                         process_text_bb(url))
+        url = "https://b23.tv/cYG0K8"
+        self.assertEqual("https://space.bilibili.com/674746763",
                          process_text_bb(url))
         # 空间
         url = "https://b23.tv/uD6S24"
@@ -84,12 +82,15 @@ class TestLinkAdjust(TestCase):
                          process_text_yt(url))
 
     def test_keep(self):
-        urls = ["https://www.bilibili.com/festival/2022bnj?bvid=BV1tR4y1j7aZ",
+        urls = ["https://www.bilibili.com/video/BV1bW4y1q79d",
+                "https://www.bilibili.com/video/BV1bW4y1q79d?t=123/"
+                "https://www.bilibili.com/festival/2022bnj?bvid=BV1tR4y1j7aZ",
+                "https://space.bilibili.com/562197/video?keyword=中国boy解说",
                 "https://space.bilibili.com/525455041/channel/collectiondetail?sid=125609 ",
                 "https://www.youtube.com/watch?v=n8PNy1EvsB4&list=PLPUGXakMkjRH0PwmVsFqWlBqHDq1yLurm",
                 "https://www.bilibili.com/medialist/play/103835?business=space_series&business_id=901366&desc=1"]
         for u in urls:
-            self.assertEqual(u, process_text_bb(u))
+            self.assertEqual(u, process_text(u))
 
     def test_special(self):
         url = "b站直播间的链接是https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1哦"
