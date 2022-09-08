@@ -6,7 +6,9 @@ from urllib.parse import parse_qs, urlparse, urlunparse
 import pywikibot
 import requests
 from pywikibot import Page
-from pywikibot.pagegenerators import GeneratorFactory
+from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
+
+from utils.sites import mgp
 
 LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
 
@@ -55,7 +57,7 @@ USELESS_BB_PARAMS = {
     'mid',
     # https://b23.tv/SfzFfn
     'native.theme', 'night', 'a_id', 's_id'
-    }
+}
 
 
 def shorten_bb_link(match: Match):
@@ -126,10 +128,7 @@ def search_pages(*search_strings) -> Iterable[Page]:
     gen.handle_arg('-ns:0')
     for s in search_strings:
         gen.handle_arg(f'-search:insource:"{s}"')
-    u = mgp.username()
-    if "bot" in u.lower() or "机" in u:
-        gen.handle_arg(f'')
-    return gen.getCombinedGenerator(preload=True)
+    return gen.getCombinedGenerator(preload=False)
 
 
 def process_text(text: str) -> str:
@@ -144,14 +143,25 @@ def link_adjust() -> None:
     链接修复程序入口
     :return: None
     """
-    for p in search_pages('spm_id_from',
-                          'b23.tv',
-                          'from_spmid',
-                          'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag', 'share_times',
-                          'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
-                          'is_story_h5', 'share_from',
-                          'youtu.be'
-                          ):
+    page_list = list(search_pages('spm_id_from',
+                            'b23.tv',
+                            'from_spmid',
+                            'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag',
+                            'share_times',
+                            'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
+                            'is_story_h5', 'share_from',
+                            'youtu.be'
+                            ))
+    pywikibot.output(", ".join(p.title() for p in page_list))
+    from utils.sites import mgp
+    u = mgp.username()
+    if "bot" in u.lower() or "机" in u:
+        # FIXME: change rate limit to 500 here
+        rate_limit = 500
+    else:
+        rate_limit = 50
+    pages = PreloadingGenerator((p for p in page_list), rate_limit)
+    for p in pages:
         try:
             result = process_text(p.text)
         except Exception as e:
