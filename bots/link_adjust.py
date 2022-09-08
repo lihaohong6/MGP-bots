@@ -52,7 +52,9 @@ USELESS_BB_PARAMS = {
     # https://b23.tv/jf8kgOH
     'share_from', 'is_story_h5',
     # https://b23.tv/dl5XUl9
-    'mid'
+    'mid',
+    # https://b23.tv/SfzFfn
+    'native.theme', 'night', 'a_id', 's_id'
     }
 
 
@@ -147,7 +149,7 @@ def link_adjust() -> None:
                           'from_spmid',
                           'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag', 'share_times',
                           'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
-                          'is_story_h5', 'share_from'
+                          'is_story_h5', 'share_from',
                           'youtu.be'
                           ):
         try:
