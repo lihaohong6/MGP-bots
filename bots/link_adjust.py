@@ -8,8 +8,6 @@ import requests
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 
-from utils.sites import mgp
-
 LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
 
 
@@ -109,20 +107,18 @@ def process_text_bb(text: str) -> str:
 USELESS_YT_PARAMS = {'feature', 'ab_channel'}
 
 
-def shorten_yt_link(match: Match) -> str:
-    new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
-    return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS)
-
-
 def process_text_yt(text: str) -> str:
+    def expand_short_link(match: Match):
+        new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
+        return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS)
+
     text = re.sub(r'youtu\.be/([\w-]+)' + '(' + LINK_END + ')',
-                  shorten_yt_link,
+                  expand_short_link,
                   text,
                   flags=re.ASCII)
-    text = re.sub(r'www\.youtube\.com/watch\?v=([\w-]+)' + '(' + LINK_END + ')',
-                  shorten_yt_link,
-                  text,
-                  flags=re.ASCII)
+    text = re.sub(r'(?:www\.)?youtube\.com/watch\?' + LINK_END,
+                  lambda match: remove_link_params(match.group(0), lambda s, _: s not in USELESS_YT_PARAMS),
+                  text)
     return text
 
 

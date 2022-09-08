@@ -63,12 +63,14 @@ class TestLinkAdjust(TestCase):
         self.assertEqual("https://mall.bilibili.com/detail.html?itemsId=10040825#noReffer=true&goFrom=na",
                          process_text_bb(url))
 
-    def test_process_text_yt(self):
+    def test_process_text_yt_no_change(self):
         # 无更改
         url = "https://www.youtube.com/watch?v=k9jAlYmNK5A&t=12s"
         self.assertEqual(url, process_text_yt(url))
         url = "2015年8月31日发布首个[https://www.youtube.com/watch?v=MILDduR_k9c 试听曲]"
         self.assertEqual(url, process_text_yt(url))
+
+    def test_process_text_yt_expand(self):
         # 展开youtu.be
         url = "https://youtu.be/h-FccHqdLV0?t=81"
         self.assertEqual("https://www.youtube.com/watch?v=h-FccHqdLV0&t=81",
@@ -76,7 +78,12 @@ class TestLinkAdjust(TestCase):
         url = "https://youtu.be/jA8M_oYpODo"
         self.assertEqual("https://www.youtube.com/watch?v=jA8M_oYpODo",
                          process_text_yt(url))
+
+    def test_process_text_yt_remove(self):
         # YouTube链接的无效参数
+        url = "https://youtube.com/watch?feature=youtu.be&v=t-ES9KW_Ij8"
+        self.assertEqual("https://youtube.com/watch?v=t-ES9KW_Ij8",
+                         process_text_yt(url))
         url = "https://www.youtube.com/watch?v=be8wqUqDhFU&feature=youtu.be"
         self.assertEqual("https://www.youtube.com/watch?v=be8wqUqDhFU",
                          process_text_yt(url))
