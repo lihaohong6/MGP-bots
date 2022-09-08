@@ -5,7 +5,7 @@ import requests
 from pywikibot import Page
 from pywikibot.exceptions import InvalidTitleError
 from pywikibot.pagegenerators import GeneratorFactory
-from pywikibot.tools import itergroup
+from pywikibot.tools.itertools import itergroup
 
 from utils.config import get_data_path
 from utils.sites import cm, mgp

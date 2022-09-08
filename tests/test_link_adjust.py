@@ -95,7 +95,8 @@ class TestLinkAdjust(TestCase):
                 "https://space.bilibili.com/562197/video?keyword=中国boy解说",
                 "https://space.bilibili.com/525455041/channel/collectiondetail?sid=125609 ",
                 "https://www.youtube.com/watch?v=n8PNy1EvsB4&list=PLPUGXakMkjRH0PwmVsFqWlBqHDq1yLurm",
-                "https://www.bilibili.com/medialist/play/103835?business=space_series&business_id=901366&desc=1"]
+                "https://www.bilibili.com/medialist/play/103835?business=space_series&business_id=901366&desc=1",
+                "youtu.be<nowiki>/</nowiki>n8PNy1EvsB4"]
         for u in urls:
             self.assertEqual(u, process_text(u))
 
