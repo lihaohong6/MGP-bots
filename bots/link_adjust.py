@@ -59,6 +59,15 @@ USELESS_BB_PARAMS = {
     'native.theme', 'night', 'a_id', 's_id'
 }
 
+SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
+                   'from_spmid',
+                   'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag',
+                   'share_times',
+                   'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
+                   'unique_k', 'ftype', 'otype', 'ctype',
+                   'is_story_h5', 'share_from',
+                   'youtu.be']
+
 
 def shorten_bb_link(match: Match):
     link = match.group(0)
@@ -143,15 +152,7 @@ def link_adjust() -> None:
     链接修复程序入口
     :return: None
     """
-    page_list = list(search_pages('spm_id_from',
-                            'b23.tv',
-                            'from_spmid',
-                            'share_source', 'share_medium', 'share_plat', 'share_session_id', 'share_tag',
-                            'share_times',
-                            'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
-                            'is_story_h5', 'share_from',
-                            'youtu.be'
-                            ))
+    page_list = list(search_pages(*SEARCH_KEYWORDS))
     pywikibot.output(", ".join(p.title() for p in page_list))
     from utils.sites import mgp
     u = mgp.username()
