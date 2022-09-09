@@ -41,6 +41,8 @@ class RecentChangesBot(SingleSiteBot, ABC):
         changes = list(self.gen)
         changes.reverse()
         pywikibot.output(f"Patrolling {len(changes)} recent changes")
+        if len(changes) > 0:
+            pywikibot.output(f"Examining pages with rcid from {changes[0]['rcid']} to {changes[-1]['rcid']}")
         gen = PreloadingGenerator((Page(source=self.site, title=item['title']) for item in changes),
                                   groupsize=self.group_size)
         for index, page in enumerate(gen):
@@ -51,4 +53,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
             with open(self.resume_file, "w") as f:
                 f.write(str(changes[index]['rcid']))
 
+        last_entry = changes[-1]
+        pywikibot.output(f"Last page is titled {last_entry['title']} with rcid {last_entry['rcid']} "
+                         f"modified on {last_entry['timestamp']}")
         self.exit()
