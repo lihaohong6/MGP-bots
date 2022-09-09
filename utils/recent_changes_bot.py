@@ -27,7 +27,8 @@ class RecentChangesBot(SingleSiteBot, ABC):
         self.resume_file = get_data_path().joinpath(bot_name + "_resume.txt")
         if self.resume_file.exists() and resume_id is None:
             try:
-                resume_id = int(open(self.resume_file, "r").read())
+                with open(self.resume_file, "r") as f:
+                    resume_id = int(f.read())
             except Exception as e:
                 pywikibot.error(e)
         self.gen = filter_recent_changes(resume_id,
