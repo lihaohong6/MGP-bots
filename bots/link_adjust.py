@@ -1,4 +1,6 @@
+import argparse
 import re
+import sys
 from re import Match
 from typing import Iterable, Callable, Dict
 from urllib.parse import parse_qs, urlparse, urlunparse
@@ -6,7 +8,10 @@ from urllib.parse import parse_qs, urlparse, urlunparse
 import pywikibot
 import requests
 from pywikibot import Page
+from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
+
+from utils.recent_changes_bot import RecentChangesBot
 
 LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
 
@@ -143,13 +148,23 @@ def process_text(text: str) -> str:
 BOT_MESSAGE = "使用[[U:Lihaohong/链接清理机器人|机器人]]"
 
 
+class LinkAdjustBot(SingleSiteBot):
+    def treat(self, page: Page) -> None:
+        result = process_text(page.text)
+        if result != page.text:
+            page.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',
+                      botflag=True, watch='nochange')
+
+
+class LinkAdjustRecentChangesBot(RecentChangesBot, LinkAdjustBot):
+    pass
+
+
 def link_adjust() -> None:
     """
     链接修复程序入口
     :return: None
     """
-    page_list = list(search_pages(*SEARCH_KEYWORDS))
-    pywikibot.output(", ".join(p.title() for p in page_list))
     from utils.sites import mgp
     u = mgp.username()
     if "bot" in u.lower() or "机" in u:
@@ -157,17 +172,21 @@ def link_adjust() -> None:
         rate_limit = 500
     else:
         rate_limit = 50
-    pages = PreloadingGenerator((p for p in page_list), rate_limit)
-    for p in pages:
-        try:
-            result = process_text(p.text)
-        except Exception as e:
-            pywikibot.error(p.title() + ": " + str(e))
-            continue
-        if result != p.text:
-            p.text = result
-            p.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',
-                   botflag=True, watch='nochange')
+    p = argparse.ArgumentParser()
+    p.add_argument("-r", "--recent", dest="recent", action="store_true")
+    p.add_argument("-i", "--id", dest="rcid", type=int, default=None)
+    p.add_argument("-ns", "--namespace", dest="namespace", type=str, default="0")
+    args = p.parse_args(sys.argv[2:])
+    if args.recent:
+        bot = LinkAdjustRecentChangesBot(bot_name="link_adjust", resume_id=args.rcid, group_size=rate_limit,
+                                         ns=args.namespace)
+        bot.run()
+    else:
+        page_list = list(search_pages(*SEARCH_KEYWORDS))
+        pywikibot.output(", ".join(p.title() for p in page_list))
+        pages = PreloadingGenerator((p for p in page_list), rate_limit)
+        bot = LinkAdjustBot(site=mgp, generator=pages)
+        bot.run()
 
 
 def link_adjust_test():
