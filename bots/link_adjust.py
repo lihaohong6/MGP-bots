@@ -69,6 +69,7 @@ SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
                    'bbid', 'from_source', 'broadcast_type', 'is_room_feed',
                    'unique_k', 'ftype', 'otype', 'ctype',
                    'is_story_h5', 'share_from',
+                   'read/mobile',
                    'youtu.be']
 
 
@@ -152,6 +153,7 @@ class LinkAdjustBot(SingleSiteBot):
     def treat(self, page: Page) -> None:
         result = process_text(page.text)
         if result != page.text:
+            page.text = result
             page.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',
                       botflag=True, watch='nochange')
 
