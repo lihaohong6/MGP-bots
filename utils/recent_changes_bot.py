@@ -31,7 +31,8 @@ class RecentChangesBot(SingleSiteBot, ABC):
             except Exception as e:
                 pywikibot.error(e)
         self.gen = filter_recent_changes(resume_id,
-                                         site.recentchanges(namespaces=ns, bot=False, redirect=False))
+                                         site.recentchanges(namespaces=ns, bot=False, redirect=False,
+                                                            changetype='edit|new'))
         self._start_ts = pywikibot.Timestamp.now()
 
     def run(self) -> None:

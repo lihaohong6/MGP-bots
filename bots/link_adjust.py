@@ -170,8 +170,8 @@ def link_adjust() -> None:
     from utils.sites import mgp
     u = mgp.username()
     if "bot" in u.lower() or "机" in u:
-        # FIXME: 500 will exceed the limit of 8,388,608 bytes in server response
-        rate_limit = 50
+        # FIXME: 500 will sometimes exceed the limit of 8,388,608 bytes in server response
+        rate_limit = 300
     else:
         rate_limit = 50
     p = argparse.ArgumentParser()
