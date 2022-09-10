@@ -10,12 +10,17 @@ from utils.sites import mgp
 
 
 def filter_recent_changes(resume_id: int, recent_changes_generator):
+    existing_titles = set()
     for item in recent_changes_generator:
         if resume_id is None:
             pywikibot.error("Don't know where to resume. Reading the past 5000 changes")
             resume_id = item['rcid'] - 5000
+        page_title = item['title']
+        if page_title in existing_titles:
+            continue
         if item['rcid'] < resume_id:
             break
+        existing_titles.add(page_title)
         yield item
 
 
@@ -40,7 +45,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
         self.setup()
         changes = list(self.gen)
         changes.reverse()
-        pywikibot.output(f"Patrolling {len(changes)} recent changes")
+        pywikibot.output(f"Patrolling {len(changes)} recently changed pages")
         if len(changes) > 0:
             pywikibot.output(f"Examining pages with rcid from {changes[0]['rcid']} to {changes[-1]['rcid']}")
         gen = PreloadingGenerator((Page(source=self.site, title=item['title']) for item in changes),
