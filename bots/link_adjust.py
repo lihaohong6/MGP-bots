@@ -70,7 +70,7 @@ SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
                    'unique_k', 'ftype', 'otype', 'ctype',
                    'is_story_h5', 'share_from',
                    'read/mobile',
-                   'youtu.be']
+                   'youtu.be', 'ab_channel']
 
 
 def shorten_bb_link(match: Match):
@@ -178,13 +178,14 @@ def link_adjust() -> None:
     p.add_argument("-r", "--recent", dest="recent", action="store_true")
     p.add_argument("-i", "--id", dest="rcid", type=int, default=None)
     p.add_argument("-ns", "--namespace", dest="namespace", type=str, default="0")
+    p.add_argument("-s", "--search", nargs="+", dest="search", type=list, default=SEARCH_KEYWORDS)
     args = p.parse_args(sys.argv[2:])
     if args.recent:
         bot = LinkAdjustRecentChangesBot(bot_name="link_adjust", resume_id=args.rcid, group_size=rate_limit,
                                          ns=args.namespace)
         bot.run()
     else:
-        page_list = list(search_pages(*SEARCH_KEYWORDS))
+        page_list = list(search_pages(*args.search))
         pywikibot.output(", ".join(p.title() for p in page_list))
         pages = PreloadingGenerator((p for p in page_list), rate_limit)
         bot = LinkAdjustBot(site=mgp, generator=pages)
