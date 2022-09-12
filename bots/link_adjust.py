@@ -178,7 +178,7 @@ def link_adjust() -> None:
     p.add_argument("-r", "--recent", dest="recent", action="store_true")
     p.add_argument("-i", "--id", dest="rcid", type=int, default=None)
     p.add_argument("-ns", "--namespace", dest="namespace", type=str, default="0")
-    p.add_argument("-s", "--search", nargs="+", dest="search", type=list, default=SEARCH_KEYWORDS)
+    p.add_argument("-s", "--search", nargs="+", dest="search", default=SEARCH_KEYWORDS)
     args = p.parse_args(sys.argv[2:])
     if args.recent:
         bot = LinkAdjustRecentChangesBot(bot_name="link_adjust", resume_id=args.rcid, group_size=rate_limit,
