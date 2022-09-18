@@ -11,7 +11,7 @@ from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import PreloadingGenerator
 
-from utils.config import get_rate_limit
+from utils.config import get_rate_limit, get_default_save_params
 from bots.recent_changes_bot import RecentChangesBot
 from utils.utils import search_pages
 
@@ -142,8 +142,7 @@ class LinkAdjustBot(SingleSiteBot):
         result = treat_links(page.text)
         if result != page.text:
             page.text = result
-            page.save(summary=LINK_ADJUST_BOT_SUMMARY, minor=True, tags='Bot',
-                      botflag=True, watch='nochange')
+            page.save(summary=LINK_ADJUST_BOT_SUMMARY, **get_default_save_params())
 
 
 class LinkAdjustRecentChangesBot(RecentChangesBot, LinkAdjustBot):
@@ -183,4 +182,4 @@ def link_adjust_test():
     from utils.sites import mgp
     sandbox = Page(source=mgp, title="Help:沙盒")
     sandbox.text = treat_links(sandbox.text)
-    sandbox.save(summary=LINK_ADJUST_BOT_SUMMARY + "（测试）", minor=True, tags="Bot")
+    sandbox.save(summary=LINK_ADJUST_BOT_SUMMARY + "（测试）", **get_default_save_params())

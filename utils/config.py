@@ -25,3 +25,12 @@ def get_rate_limit():
     else:
         rate_limit = 50
     return rate_limit
+
+
+def get_default_save_params():
+    return {
+        'minor': True,
+        'watch': 'nochange',
+        'botflag': True,
+        'tags': 'Bot'
+    }

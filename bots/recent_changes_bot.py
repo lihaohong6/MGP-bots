@@ -8,7 +8,7 @@ from pywikibot.pagegenerators import PreloadingGenerator
 
 from bots.isbn import treat_isbn, ISBN_BOT_SUMMARY
 from bots.link_adjust import treat_links, LINK_ADJUST_BOT_SUMMARY
-from utils.config import get_data_path, get_rate_limit
+from utils.config import get_data_path, get_rate_limit, get_default_save_params
 from utils.sites import mgp
 
 
@@ -86,8 +86,7 @@ def patrol_recent_changes():
                 summaries.append(summary)
                 page.text = text
         if len(summaries) > 0:
-            page.save(summary="；".join(summaries), watch="nochange", minor=True,
-                      botflag=True, tags="Bot")
+            page.save(summary="；".join(summaries), **get_default_save_params())
 
     bot = RecentChangesBot(bot_name="recent_changes")
     bot.treat = treat_page
