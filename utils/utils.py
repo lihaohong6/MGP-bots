@@ -6,11 +6,11 @@ from typing import List, Set, Iterable
 
 import wikitextparser as wtp
 from pywikibot import Page, Site
-from pywikibot.pagegenerators import GeneratorFactory
+from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 from pywikibot.tools import deprecated
 from wikitextparser import Template, WikiLink
 
-from utils.config import get_data_path
+from utils.config import get_data_path, get_rate_limit
 from utils.mgp import MGPPage
 
 
@@ -193,3 +193,20 @@ def parse_gallery(text: str) -> List[str]:
                     pass
     return result
 
+
+def search_pages(*search_strings, preload: bool = True) -> Iterable[Page]:
+    """
+    搜索主名字空间下，源代码有任意关键词的条目
+    :param search_strings: 关键词列表
+    :param preload: 是否预先批量加载列表中的页面
+    :return: Page对象
+    """
+    from utils.sites import mgp
+    gen = GeneratorFactory(site=mgp)
+    gen.handle_arg('-ns:0')
+    for s in search_strings:
+        gen.handle_arg(f'-search:insource:"{s}"')
+    gen = gen.getCombinedGenerator(preload=False)
+    if preload:
+        gen = PreloadingGenerator(gen, groupsize=get_rate_limit())
+    return gen

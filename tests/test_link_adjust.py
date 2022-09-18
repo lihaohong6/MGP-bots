@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from bots.link_adjust import process_text_bb, process_text_yt, process_text
+from bots.link_adjust import process_text_bb, process_text_yt, treat_links
 
 
 class TestLinkAdjust(TestCase):
@@ -98,7 +98,7 @@ class TestLinkAdjust(TestCase):
                 "https://www.bilibili.com/medialist/play/103835?business=space_series&business_id=901366&desc=1",
                 "youtu.be<nowiki>/</nowiki>n8PNy1EvsB4"]
         for u in urls:
-            self.assertEqual(u, process_text(u))
+            self.assertEqual(u, treat_links(u))
 
     def test_special(self):
         url = "b站直播间的链接是https://live.bilibili.com/21996804?broadcast_type=0&is_room_feed=1哦"
@@ -159,4 +159,4 @@ PS4上有玩《东方深秘录》。<ref>东方station 特别嘉宾上坂堇 htt
 * 中国版官网：https://bml.bilibili.com/sp?spm_id_from=333.999.rich-text.link.click
 * 海外版官网：https://www.bmlsp.bilibili.com/ですわ
 <references/>"""
-        self.assertEqual(expected, process_text(original))
+        self.assertEqual(expected, treat_links(original))

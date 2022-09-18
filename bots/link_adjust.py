@@ -2,16 +2,18 @@ import argparse
 import re
 import sys
 from re import Match
-from typing import Iterable, Callable, Dict
+from typing import Callable, Dict
 from urllib.parse import parse_qs, urlparse, urlunparse
 
 import pywikibot
 import requests
 from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
-from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
+from pywikibot.pagegenerators import PreloadingGenerator
 
-from utils.recent_changes_bot import RecentChangesBot
+from utils.config import get_rate_limit
+from bots.recent_changes_bot import RecentChangesBot
+from utils.utils import search_pages
 
 LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
 
@@ -128,33 +130,19 @@ def process_text_yt(text: str) -> str:
     return text
 
 
-def search_pages(*search_strings) -> Iterable[Page]:
-    """
-    搜索主名字空间下，源代码有任意关键词的条目
-    :param search_strings: 关键词列表
-    :return: Page对象
-    """
-    from utils.sites import mgp
-    gen = GeneratorFactory(site=mgp)
-    gen.handle_arg('-ns:0')
-    for s in search_strings:
-        gen.handle_arg(f'-search:insource:"{s}"')
-    return gen.getCombinedGenerator(preload=False)
-
-
-def process_text(text: str) -> str:
+def treat_links(text: str) -> str:
     return process_text_bb(process_text_yt(text))
 
 
-BOT_MESSAGE = "使用[[U:Lihaohong/链接清理机器人|机器人]]"
+LINK_ADJUST_BOT_SUMMARY = "使用[[U:Lihaohong/链接清理机器人|机器人]]清理b站和YouTube链接"
 
 
 class LinkAdjustBot(SingleSiteBot):
     def treat(self, page: Page) -> None:
-        result = process_text(page.text)
+        result = treat_links(page.text)
         if result != page.text:
             page.text = result
-            page.save(summary=BOT_MESSAGE + "清理b站和YouTube链接", minor=True, tags='Bot',
+            page.save(summary=LINK_ADJUST_BOT_SUMMARY, minor=True, tags='Bot',
                       botflag=True, watch='nochange')
 
 
@@ -168,12 +156,7 @@ def link_adjust() -> None:
     :return: None
     """
     from utils.sites import mgp
-    u = mgp.username()
-    if "bot" in u.lower() or "机" in u:
-        # FIXME: 500 will sometimes exceed the limit of 8,388,608 bytes in server response
-        rate_limit = 300
-    else:
-        rate_limit = 50
+    rate_limit = get_rate_limit()
     p = argparse.ArgumentParser()
     p.add_argument("-r", "--recent", dest="recent", action="store_true")
     p.add_argument("-i", "--id", dest="rcid", type=int, default=None)
@@ -199,5 +182,5 @@ def link_adjust_test():
     """
     from utils.sites import mgp
     sandbox = Page(source=mgp, title="Help:沙盒")
-    sandbox.text = process_text(sandbox.text)
-    sandbox.save(summary=BOT_MESSAGE + "测试清理链接", minor=True, tags="Bot")
+    sandbox.text = treat_links(sandbox.text)
+    sandbox.save(summary=LINK_ADJUST_BOT_SUMMARY + "（测试）", minor=True, tags="Bot")

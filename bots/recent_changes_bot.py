@@ -1,3 +1,4 @@
+import sys
 from abc import ABC
 
 import pywikibot
@@ -5,7 +6,9 @@ from pywikibot import APISite, Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import PreloadingGenerator
 
-from utils.config import get_data_path
+from bots.isbn import treat_isbn, ISBN_BOT_SUMMARY
+from bots.link_adjust import treat_links, LINK_ADJUST_BOT_SUMMARY
+from utils.config import get_data_path, get_rate_limit
 from utils.sites import mgp
 
 
@@ -25,7 +28,7 @@ def filter_recent_changes(resume_id: int, recent_changes_generator):
 
 
 class RecentChangesBot(SingleSiteBot, ABC):
-    def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp, group_size: int = 50,
+    def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp, group_size: int = get_rate_limit(),
                  ns: str = "0", **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
         self.group_size = group_size
@@ -62,3 +65,30 @@ class RecentChangesBot(SingleSiteBot, ABC):
         pywikibot.output(f"Last page is titled {last_entry['title']} with rcid {last_entry['rcid']} "
                          f"modified on {last_entry['timestamp']}")
         self.exit()
+
+
+def patrol_recent_changes():
+    bots = {
+        'link_adjust': (treat_links, LINK_ADJUST_BOT_SUMMARY),
+        'isbn': (treat_isbn, ISBN_BOT_SUMMARY)
+    }
+    args = sys.argv[2:]
+    if len(args) > 0:
+        bots = [(k, v) for k, v in bots.items() if k in args]
+    pywikibot.output("Running " + ", ".join(bots.keys()))
+    assert len(bots) > 0
+
+    def treat_page(page: Page):
+        summaries = []
+        for func, summary in bots.values():
+            text = func(page.text)
+            if text != page.text:
+                summaries.append(summary)
+                page.text = text
+        if len(summaries) > 0:
+            page.save(summary="；".join(summaries), watch="nochange", minor=True,
+                      botflag=True, tags="Bot")
+
+    bot = RecentChangesBot(bot_name="recent_changes")
+    bot.treat = treat_page
+    bot.run()

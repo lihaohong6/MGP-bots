@@ -7,7 +7,7 @@ from pywikibot.pagegenerators import AllpagesPageGenerator
 import wikitextparser as wtp
 from wikitextparser import WikiLink
 
-from utils.config import lang_map
+from utils.config import get_lang_map
 from utils.logger import get_logger
 from utils.utils import count_trailing_newline, is_empty, get_continue_page, save_continue_page
 
@@ -28,8 +28,8 @@ class InterWikiBot:
     def __init__(self, source: str, target: str):
         self.source = source
         self.target = target
-        self.source_site = lang_map[source]
-        self.target_site = lang_map[target]
+        self.source_site = get_lang_map()[source]
+        self.target_site = get_lang_map()[target]
         self.target_site.login()
 
     def treat_page(self, page):
