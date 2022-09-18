@@ -1,4 +1,3 @@
-import sys
 from abc import ABC
 
 import pywikibot
@@ -6,9 +5,7 @@ from pywikibot import APISite, Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import PreloadingGenerator
 
-from bots.isbn import treat_isbn, ISBN_BOT_SUMMARY
-from bots.link_adjust import treat_links, LINK_ADJUST_BOT_SUMMARY
-from utils.config import get_data_path, get_rate_limit, get_default_save_params
+from utils.config import get_rate_limit, get_data_path
 from utils.sites import mgp
 
 
@@ -65,31 +62,3 @@ class RecentChangesBot(SingleSiteBot, ABC):
         pywikibot.output(f"Last page is titled {last_entry['title']} with rcid {last_entry['rcid']} "
                          f"modified on {last_entry['timestamp']}")
         self.exit()
-
-
-def patrol_recent_changes():
-    bots = {
-        'link_adjust': (treat_links, LINK_ADJUST_BOT_SUMMARY),
-        'isbn': (treat_isbn, ISBN_BOT_SUMMARY)
-    }
-    args = sys.argv[2:]
-    if len(args) > 0:
-        bots = [(k, v) for k, v in bots.items() if k in args]
-    pywikibot.output("Running " + ", ".join(bots.keys()))
-    assert len(bots) > 0
-
-    def treat_page(page: Page):
-        if "{{施工中" in page.text:
-            return
-        summaries = []
-        for func, summary in bots.values():
-            text = func(page.text)
-            if text != page.text:
-                summaries.append(summary)
-                page.text = text
-        if len(summaries) > 0:
-            page.save(summary="；".join(summaries), **get_default_save_params())
-
-    bot = RecentChangesBot(bot_name="recent_changes")
-    bot.treat = treat_page
-    bot.run()
