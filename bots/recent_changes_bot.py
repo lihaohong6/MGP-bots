@@ -79,6 +79,8 @@ def patrol_recent_changes():
     assert len(bots) > 0
 
     def treat_page(page: Page):
+        if "{{施工中" in page.text:
+            return
         summaries = []
         for func, summary in bots.values():
             text = func(page.text)
