@@ -64,7 +64,7 @@ class IsbnBot(SingleSiteBot):
     def treat(self, page: Page):
         text = treat_isbn(page.text)
         if text != page.text:
-            self.userPut(page, page.text, text, **get_default_save_params())
+            self.userPut(page, page.text, text, summary=ISBN_BOT_SUMMARY, **get_default_save_params())
             # page.text = text
             # page.save(summary=ISBN_BOT_SUMMARY, **get_default_save_params())
 
