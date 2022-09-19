@@ -23,6 +23,12 @@ else:
 
 
 def should_remove(text: str) -> bool:
+    """
+    Determine whether a comment should be removed.
+    Used to be complicated, but greatly simplified now.
+    :param text: Comment
+    :return: True if comment should be removed; false otherwise
+    """
     if text in black_list:
         return True
     return False
@@ -45,11 +51,17 @@ class BoilerplateBot(SingleSiteBot):
 
 
 def download_boilerplate():
+    """
+    Download boilerplate templates from subpages of Template:页面格式 (including past versions),
+    extract all comments in these templates and store them in a file.
+    :return: None
+    """
     from bs4 import BeautifulSoup
     import urllib
 
     from utils.sites import mgp
 
+    # Don't know the api for subpages, so simply parse all the links in the HTML response
     response = requests.get("https://mzh.moegirl.org.cn/index.php?title=Special%3A%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95"
                             "&prefix=%E9%A1%B5%E9%9D%A2%E6%A0%BC%E5%BC%8F&namespace=10").text
     soup = BeautifulSoup(response, 'html.parser')
@@ -61,6 +73,7 @@ def download_boilerplate():
         if 'Template:页面格式/' in href and '/doc' not in href:
             pages.append(Page(source=mgp, title=href))
 
+    # find all revision of all pages and add all comments into black list
     result = set()
     for index, page in enumerate(PreloadingGenerator(pages)):
         print(f"Processing page {index}: " + page.title())
@@ -71,11 +84,13 @@ def download_boilerplate():
                 if s != "":
                     result.add(s)
 
+    # store black list in a file
     BOILERPLATE_PATH.mkdir(parents=True, exist_ok=True)
     pickle.dump(result, open(AUTO_PATH, "wb"))
 
 
 def run_boilerplate_bot():
+    # all arguments are treated as search keywords
     keywords = sys.argv[2:]
     bot = BoilerplateBot(generator=search_pages(*keywords, preload=True))
     bot.run()

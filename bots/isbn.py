@@ -14,9 +14,11 @@ def sub_isbn(text: str) -> str:
     def replace(m: Match) -> str:
         raw = m.group(0)
         lower = raw.lower()
+        # skip images
         if ".jp" in lower or ".png" in lower or ".webp" in lower or ".gif" in lower:
             return raw
         extra1 = extra2 = ""
+        # keep ISBN: and ISBN：
         if "ISBN:" == raw[:5] or "ISBN：" == raw[:5]:
             extra1 = raw[:5]
             extra2 = "|" + m.group(1)
@@ -30,6 +32,8 @@ def sub_isbn(text: str) -> str:
 
 def treat_isbn(text: str) -> str:
     while True:
+        # re.sub sometimes doesn't work for multiple isbn,
+        # so apply sub repeatedly
         res = sub_isbn(text)
         if res == text:
             return res
