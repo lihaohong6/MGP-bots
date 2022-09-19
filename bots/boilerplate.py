@@ -12,7 +12,7 @@ import wikitextparser as wtp
 from utils.config import get_default_save_params
 from utils.utils import search_pages
 
-BOILERPLATE_BOT_SUMMARY = "去除预加载"
+BOILERPLATE_BOT_SUMMARY = "去除预加载残留"
 BOILERPLATE_PATH = Path("texts/boilerplates")
 AUTO_PATH = BOILERPLATE_PATH.joinpath("auto.pickle")
 if AUTO_PATH.exists():

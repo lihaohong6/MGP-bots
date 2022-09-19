@@ -21,13 +21,10 @@ def sub_isbn(text: str, blacklist: Set[str]) -> str:
         if ".jp" in lower or ".png" in lower or ".webp" in lower or ".gif" in lower:
             return raw
         isbn = m.group(1)
+        # skip isbn in wiki links and urls
         for forbid in blacklist:
             if isbn in forbid:
                 return raw
-        # # detect url and internal links
-        # end_index = raw.index(m.group(1)) + len(m.group(1))
-        # if end_index < len(raw) and raw[end_index] in {'.', '/', ']'}:
-        #     return raw
         extra1 = extra2 = ""
         # keep ISBN: and ISBN：
         if "ISBN:" == raw[:5] or "ISBN：" == raw[:5]:
@@ -64,7 +61,6 @@ class IsbnBot(SingleSiteBot):
     def treat(self, page: Page):
         text = treat_isbn(page.text)
         if text != page.text:
-            # self.userPut(page, page.text, text, summary=ISBN_BOT_SUMMARY, **get_default_save_params())
             page.text = text
             page.save(summary=ISBN_BOT_SUMMARY, **get_default_save_params())
 
