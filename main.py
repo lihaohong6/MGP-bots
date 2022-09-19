@@ -5,7 +5,9 @@
 import sys
 from typing import Dict, Callable
 
+from bots.boilerplate import run_boilerplate_bot
 from bots.commons_image import commons_image
+from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.mass_cat import mass_cat
 from bots.move_image import move_image
@@ -20,7 +22,9 @@ bots: Dict[str, Callable] = {
     'move_image': move_image,
     'commons_image': commons_image,
     'vtuber_commons_cat': vtuber_commons_cat,
-    'add_template': add_template
+    'add_template': add_template,
+    'boilerplate': run_boilerplate_bot,
+    'isbn': isbn_adjust
 }
 
 

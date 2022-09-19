@@ -1,20 +1,39 @@
 import pickle
+import sys
 from pathlib import Path
-from typing import Any
 
+import pywikibot
 import requests
-from pywikibot import Page, APISite
+from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
-from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
+from pywikibot.pagegenerators import PreloadingGenerator
+import wikitextparser as wtp
 
 from utils.config import get_default_save_params
+from utils.utils import search_pages
+
+BOILERPLATE_BOT_SUMMARY = "去除预加载"
+BOILERPLATE_PATH = Path("texts/boilerplates")
+AUTO_PATH = BOILERPLATE_PATH.joinpath("auto.pickle")
+if AUTO_PATH.exists():
+    black_list = set(pickle.load(open(AUTO_PATH, "rb")))
+else:
+    print("Black list does not exist!")
+    black_list = set()
+
+
+def should_remove(text: str) -> bool:
+    if text in black_list:
+        return True
+    return False
 
 
 def treat_boilerplate(text: str) -> str:
-    pass
-
-
-BOILERPLATE_BOT_SUMMARY = "去除预加载"
+    parsed = wtp.parse(text)
+    for c in parsed.comments:
+        if should_remove(c.contents.strip()):
+            c.string = ""
+    return str(parsed)
 
 
 class BoilerplateBot(SingleSiteBot):
@@ -28,7 +47,6 @@ class BoilerplateBot(SingleSiteBot):
 def download_boilerplate():
     from bs4 import BeautifulSoup
     import urllib
-    import wikitextparser as wtp
 
     from utils.sites import mgp
 
@@ -43,15 +61,21 @@ def download_boilerplate():
         if 'Template:页面格式/' in href and '/doc' not in href:
             pages.append(Page(source=mgp, title=href))
 
-    result = []
-    for page in PreloadingGenerator(pages):
-        parsed = wtp.parse(page.text)
-        for comment in parsed.comments:
-            s = comment.contents.strip()
-            if s != "":
-                result.append(s)
+    result = set()
+    for index, page in enumerate(PreloadingGenerator(pages)):
+        print(f"Processing page {index}: " + page.title())
+        for revision in page.revisions(content=True):
+            parsed = wtp.parse(revision['*'])
+            for comment in parsed.comments:
+                s = comment.contents.strip()
+                if s != "":
+                    result.add(s)
 
-    path = Path("texts/boilerplates")
-    path.mkdir(parents=True, exist_ok=True)
-    file_path = path.joinpath("auto.txt")
-    pickle.dump(result, open(file_path, "wb"))
+    BOILERPLATE_PATH.mkdir(parents=True, exist_ok=True)
+    pickle.dump(result, open(AUTO_PATH, "wb"))
+
+
+def run_boilerplate_bot():
+    keywords = sys.argv[2:]
+    bot = BoilerplateBot(generator=search_pages(*keywords, preload=True))
+    bot.run()
