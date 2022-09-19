@@ -94,7 +94,8 @@ def expand_b23(text: str) -> str:
     def fetch_real_url(match: Match):
         url = match.group(0)
         response = requests.get(url)
-        if response.url.strip() == url.strip():
+        if response.url.strip() == url.strip() or \
+                (response.history and len(response.history) > 1):
             pywikibot.error("Link " + url + " has problematic response.")
             return url
         return process_text_bb(response.url)

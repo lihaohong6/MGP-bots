@@ -6,7 +6,6 @@ from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import PreloadingGenerator
 
 from utils.config import get_rate_limit, get_data_path
-from utils.sites import mgp
 
 
 def filter_recent_changes(resume_id: int, recent_changes_generator):
@@ -25,6 +24,8 @@ def filter_recent_changes(resume_id: int, recent_changes_generator):
 
 
 class RecentChangesBot(SingleSiteBot, ABC):
+    from utils.sites import mgp
+
     def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp, group_size: int = get_rate_limit(),
                  ns: str = "0", **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
