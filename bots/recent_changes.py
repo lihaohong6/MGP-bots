@@ -3,6 +3,7 @@ import sys
 import pywikibot
 from pywikibot import Page
 
+from bots.boilerplate import treat_boilerplate, BOILERPLATE_BOT_SUMMARY
 from bots.isbn import treat_isbn, ISBN_BOT_SUMMARY
 from bots.link_adjust import treat_links, LINK_ADJUST_BOT_SUMMARY
 from bots.recent_changes_bot import RecentChangesBot
@@ -12,7 +13,8 @@ from utils.config import get_default_save_params
 def patrol_recent_changes():
     bots = {
         'link_adjust': (treat_links, LINK_ADJUST_BOT_SUMMARY),
-        'isbn': (treat_isbn, ISBN_BOT_SUMMARY)
+        'isbn': (treat_isbn, ISBN_BOT_SUMMARY),
+        'boilerplate': (treat_boilerplate, BOILERPLATE_BOT_SUMMARY)
     }
     args = sys.argv[2:]
     if len(args) > 0:

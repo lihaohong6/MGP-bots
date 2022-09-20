@@ -11,6 +11,7 @@ from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.mass_cat import mass_cat
 from bots.move_image import move_image
+from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
 from bots.vtuber_commons_cat import vtuber_commons_cat
 from utils.config import get_data_path
@@ -24,7 +25,8 @@ bots: Dict[str, Callable] = {
     'vtuber_commons_cat': vtuber_commons_cat,
     'add_template': add_template,
     'boilerplate': run_boilerplate_bot,
-    'isbn': isbn_adjust
+    'isbn': isbn_adjust,
+    'recent_changes': patrol_recent_changes
 }
 
 
