@@ -1,4 +1,5 @@
 import sys
+from argparse import ArgumentParser
 
 import pywikibot
 from pywikibot import Page
@@ -16,9 +17,11 @@ def patrol_recent_changes():
         'isbn': (treat_isbn, ISBN_BOT_SUMMARY),
         'boilerplate': (treat_boilerplate, BOILERPLATE_BOT_SUMMARY)
     }
-    args = sys.argv[2:]
-    if len(args) > 0:
-        bots = [(k, v) for k, v in bots.items() if k in args]
+    p = ArgumentParser()
+    p.add_argument("-ns, --namespace", dest="namespace", default="0", type=str)
+    p.add_argument("bots", nargs='*', default=bots.keys())
+    args = p.parse_args(sys.argv[2:])
+    bots = dict((k, v) for k, v in bots.items() if k in args.bots)
     pywikibot.output("Running " + ", ".join(bots.keys()))
     assert len(bots) > 0
 
@@ -34,6 +37,6 @@ def patrol_recent_changes():
         if len(summaries) > 0:
             page.save(summary="；".join(summaries), **get_default_save_params())
 
-    bot = RecentChangesBot(bot_name="recent_changes")
+    bot = RecentChangesBot(bot_name="recent_changes", ns=args.namespace)
     bot.treat = treat_page
     bot.run()
