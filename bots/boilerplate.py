@@ -48,8 +48,10 @@ def treat_boilerplate(text: str) -> str:
 
 
 def find_search_string(text: str) -> Optional[str]:
-    candidates = re.findall(r"[\u4E00-\u9FFF\u3400-\u4DBF]+", text)
+    chs = r'\u4E00-\u9FFF\u3400-\u4DBF'
+    candidates = re.findall(rf"[{chs}a-zA-Z\d]+", text)
     candidates.sort(key=len, reverse=True)
+    candidates = [c for c in candidates if re.search(f'[{chs}]', c)]
     if len(candidates) > 0 and len(candidates[0]) > 3:
         return candidates[0]
     return None
