@@ -126,7 +126,7 @@ def run_boilerplate_bot():
         pywikibot.output("Using the following as search keyword: ")
         keywords = get_search_strings()
         pywikibot.output(str(keywords))
-    if len(args.keywords) == 0:
+    if len(keywords) == 0:
         pywikibot.output("No search keyword provided.")
         return
     bot = BoilerplateBot(generator=search_pages(*keywords, preload=True))
