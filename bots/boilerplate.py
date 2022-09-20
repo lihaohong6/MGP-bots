@@ -1,5 +1,6 @@
 import pickle
 import sys
+from argparse import ArgumentParser
 from pathlib import Path
 
 import pywikibot
@@ -91,6 +92,16 @@ def download_boilerplate():
 
 def run_boilerplate_bot():
     # all arguments are treated as search keywords
-    keywords = sys.argv[2:]
+    p = ArgumentParser()
+    p.add_argument("keywords", nargs="*", default=[])
+    p.add_argument("-u", "--update", action="store_true")
+    args = p.parse_args(sys.argv[2:])
+    keywords = args.keywords
+    if args.update:
+        pywikibot.output("Updating boilerplate templates...")
+        download_boilerplate()
+    if len(args.keywords) == 0:
+        pywikibot.output("No search keyword provided.")
+        return
     bot = BoilerplateBot(generator=search_pages(*keywords, preload=True))
     bot.run()
