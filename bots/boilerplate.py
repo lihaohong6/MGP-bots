@@ -1,7 +1,9 @@
 import pickle
+import re
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Optional, List, Iterable
 
 import pywikibot
 import requests
@@ -43,6 +45,23 @@ def treat_boilerplate(text: str) -> str:
         if should_remove(c.contents.strip()):
             c.string = ""
     return str(parsed)
+
+
+def find_search_string(text: str) -> Optional[str]:
+    candidates = re.findall(r"[\u4E00-\u9FFF\u3400-\u4DBF]+", text)
+    candidates.sort(key=len, reverse=True)
+    if len(candidates) > 0 and len(candidates[0]) > 3:
+        return candidates[0]
+    return None
+
+
+def get_search_strings() -> Iterable[str]:
+    res = set()
+    for w in black_list:
+        r = find_search_string(w)
+        if r:
+            res.add(r)
+    return res
 
 
 class BoilerplateBot(SingleSiteBot):
@@ -97,11 +116,16 @@ def run_boilerplate_bot():
     p = ArgumentParser()
     p.add_argument("keywords", nargs="*", default=[])
     p.add_argument("-u", "--update", action="store_true")
+    p.add_argument("-a", "--all", action="store_true")
     args = p.parse_args(sys.argv[2:])
     keywords = args.keywords
     if args.update:
         pywikibot.output("Updating boilerplate templates...")
         download_boilerplate()
+    if args.all:
+        pywikibot.output("Using the following as search keyword: ")
+        keywords = get_search_strings()
+        pywikibot.output(str(keywords))
     if len(args.keywords) == 0:
         pywikibot.output("No search keyword provided.")
         return
