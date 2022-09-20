@@ -20,7 +20,9 @@ exclude = {'Logo youtube.png', 'Bilibili Logo Blue.svg', 'Bilibilitv-logo.png', 
            'Nav-nijisanji-v20fix.png', 'Disambig gray.svg', '大萌字.svg', 'TwitCasting Icon.svg',
            'Zh conversion icon m.svg', '大萌字.svg', 'Hololivetoulogo.png', 'Nanaon-logo.svg',
            'Ambox currentevent.svg', 'NationalismMoegirl.png', 'Information icon.svg', 'TwitterVerifiedIcon.png',
-           'Folder Hexagonal Icon.svg', 'Shengliwenhua logo.jpg'
+           'Folder Hexagonal Icon.svg', 'Shengliwenhua logo.jpg', 'Bilibili Icon.svg', '227-logo.svg', 'Disambig.svg',
+           'DAB list gray.svg', 'TwitchTV logo 2019.svg', 'Douyin Logo.svg', 'YouTube Logo.svg', 'OtherWiki-gray-large.svg',
+           'Gnome-emblem-important.svg', '大草字.svg', 'Weibo-logo.png', 'Logo QQMusicIcon.png', 'Icon-info.png', 'Nuvola apps important blue.svg'
            # from commons vtuber template images
                                         '早雾聖奈 头.png', '古堡龙姬（展示图）.jpg', 'Akuno Rock.jpg', '星野悦w（半身立绘-白底）.png',
            '黄蜂 介绍图.png',
