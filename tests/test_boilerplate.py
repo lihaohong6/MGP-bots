@@ -4,7 +4,17 @@ from unittest import TestCase
 from bots.boilerplate import treat_boilerplate
 
 
-class TestIsbn(TestCase):
+class TestBoilerplate(TestCase):
+    def test_keep(self):
+        strings = ['<!-- 一些注释 -->', """|相关作品     = <!--如果使用默认配色，保留这里的注释。
+|标题颜色     = 
+|左栏颜色     = 
+|标题字体颜色 = -->
+}}"""]
+        for s in strings:
+            self.assertEqual(s,
+                             treat_boilerplate(s))
+
     def test_boilerplate(self):
         original = "|图片说明=<!-- 写在图片下方的注释，可不写。 -->啊"
         self.assertEqual("|图片说明=啊",
