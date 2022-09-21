@@ -40,6 +40,9 @@ def should_remove(text: str) -> bool:
 
 
 def treat_boilerplate(text: str) -> str:
+    # requested by LUO1P
+    if '虚拟UP主' in text:
+        return text
     parsed = wtp.parse(text)
     for c in parsed.comments:
         if should_remove(c.contents.strip()):
