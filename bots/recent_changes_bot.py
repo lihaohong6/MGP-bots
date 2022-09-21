@@ -29,7 +29,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
     from utils.sites import mgp
 
     def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp, group_size: int = get_rate_limit(),
-                 ns: str = "0", time_offset: int = -0.1, **kwargs):
+                 ns: str = "0", time_offset: int = -2, **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
         self.group_size = group_size
         self.resume_file = get_data_path().joinpath(bot_name + "_resume.txt")
