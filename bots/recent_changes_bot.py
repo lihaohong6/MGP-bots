@@ -59,6 +59,10 @@ class RecentChangesBot(SingleSiteBot, ABC):
         pywikibot.output(f"Patrolling {len(changes)} recently changed pages")
         if len(changes) > 0:
             pywikibot.output(f"Examining pages with rcid from {changes[0]['rcid']} to {changes[-1]['rcid']}")
+        else:
+            pywikibot.output("No pages recently changed.")
+            self.exit()
+            return
         gen = PreloadingGenerator((Page(source=self.site, title=item['title']) for item in changes),
                                   groupsize=self.group_size)
         for index, page in enumerate(gen):
