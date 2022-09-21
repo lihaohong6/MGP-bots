@@ -41,7 +41,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
             except Exception as e:
                 pywikibot.error(e)
         # use current time
-        cur_time = datetime.now(tz=timezone(offset=timedelta(hours=8), name="CST"))
+        cur_time = datetime.now(tz=timezone(offset=timedelta(hours=0), name="UTC"))
         # compute recent changes delay based on offset
         rc_time = cur_time + timedelta(hours=time_offset)
         time_start = Timestamp(rc_time.year, rc_time.month, rc_time.day,
