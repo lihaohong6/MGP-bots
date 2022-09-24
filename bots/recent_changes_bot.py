@@ -48,7 +48,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
                                rc_time.hour, rc_time.minute, rc_time.second,
                                tzinfo=rc_time.tzinfo)
         self.gen = filter_recent_changes(resume_id,
-                                         site.recentchanges(namespaces=ns, bot=False, redirect=False,
+                                         site.recentchanges(namespaces=ns, bot=True, redirect=False,
                                                             changetype='edit|new', start=time_start, top_only=True))
         self._start_ts = pywikibot.Timestamp.now()
 
