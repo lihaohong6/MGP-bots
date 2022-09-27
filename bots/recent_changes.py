@@ -20,6 +20,7 @@ def patrol_recent_changes():
     p = ArgumentParser()
     p.add_argument("-ns", "--namespace", dest="namespace", default="0", type=str)
     p.add_argument("-d", "--delay", dest="delay", default=2, type=int)
+    p.add_argument("-n", "--name", dest="name", default="recent_changes", type=str)
     p.add_argument("bots", nargs='*', default=bots.keys())
     args = p.parse_args(sys.argv[2:])
     bots = dict((k, v) for k, v in bots.items() if k in args.bots)
@@ -38,6 +39,6 @@ def patrol_recent_changes():
         if len(summaries) > 0:
             page.save(summary="；".join(summaries), **get_default_save_params())
 
-    bot = RecentChangesBot(bot_name="recent_changes", ns=args.namespace, delay=-args.delay)
+    bot = RecentChangesBot(bot_name=args.name, ns=args.namespace, delay=-args.delay)
     bot.treat = treat_page
     bot.run()
