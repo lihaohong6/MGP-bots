@@ -1,54 +1,14 @@
 import pickle
 from pathlib import Path
-from typing import Tuple, List, Dict
 
 import pywikibot
 from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
-from pywikibot.page import Revision
-from pywikibot.site import Namespace
 
+from utils.contributions import write_contributions_to_file
 from utils.logger import get_logger
 from utils.mgp import get_page
 from utils.utils import get_links_in_template, count_trailing_newline
-
-ContributionInfo = Tuple[int, List[str]]
-
-
-def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_name: str) -> ContributionInfo:
-    tags = revision['tags']
-    if "mw-undo" in tags:
-        byte_diff = 0
-    prev_list = old_info[1]
-    if page_name not in prev_list:
-        prev_list.append(page_name)
-    return old_info[0] + max(0, byte_diff), prev_list
-
-
-def process_page(contributions, page_name):
-    page = get_page(page_name)
-    if page.exists() and page.namespace().id == 0:
-        revisions: List[Revision] = list(page.revisions(reverse=True))
-        prev_bytes = 0
-        for revision in revisions:
-            user = revision['user']
-            byte_count = revision['size']
-            byte_diff = prev_bytes - byte_count
-            contributions[user] = process_revision(contributions.get(user, (0, [])),
-                                                   revision,
-                                                   byte_diff,
-                                                   page_name)
-            prev_bytes = byte_count
-
-
-def write_contributions_to_file(template_name: str, temp_file: Path):
-    pages = get_links_in_template(get_page(template_name))
-    contributions: Dict[str, Tuple[int, List[str]]] = dict()
-    for index, page_name in enumerate(pages):
-        process_page(contributions, page_name)
-        get_logger().info(f"{index}/{len(pages)} ")
-    with open(temp_file, "wb") as f:
-        pickle.dump(contributions, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 class BarnStarBot(SingleSiteBot):
@@ -77,7 +37,7 @@ def auto_star(template_name: str, print_contributions: bool = True, send_stars: 
               body: str = ""):
     file_name = Path("data/{}.pickle".format(template_name))
     if not file_name.exists():
-        write_contributions_to_file("T:" + template_name, file_name)
+        write_contributions_to_file(get_links_in_template(get_page('T' + template_name)), file_name)
     with open(file_name, "rb") as f:
         contributions = pickle.load(f)
     contrib_list = list(sorted(contributions.items(), key=lambda t: t[1][0], reverse=True))

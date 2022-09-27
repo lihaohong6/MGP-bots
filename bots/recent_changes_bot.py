@@ -29,7 +29,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
     from utils.sites import mgp
 
     def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp, group_size: int = get_rate_limit(),
-                 ns: str = "0", time_offset: int = -2, **kwargs):
+                 ns: str = "0", delay: int = -2, **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
         self.group_size = group_size
         self.resume_file = get_data_path().joinpath(bot_name + "_resume.txt")
@@ -43,7 +43,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
         # use current time
         cur_time = datetime.now(tz=timezone(offset=timedelta(hours=0), name="UTC"))
         # compute recent changes delay based on offset
-        rc_time = cur_time + timedelta(hours=time_offset)
+        rc_time = cur_time + timedelta(hours=delay)
         time_start = Timestamp(rc_time.year, rc_time.month, rc_time.day,
                                rc_time.hour, rc_time.minute, rc_time.second,
                                tzinfo=rc_time.tzinfo)
