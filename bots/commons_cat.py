@@ -310,7 +310,7 @@ def query_templates_for_exceptions():
         print("Processing " + page.title())
         images.update(find_image_links(page))
         print(len(images))
-        with open(get_data_path().joinpath("vtuber_template_images.txt"), "w") as f:
+        with open(get_data_path().joinpath("vtuber_template_images.txt"), "w", encoding="utf-8") as f:
             f.write(str(images))
             f.flush()
     print(images)
@@ -374,6 +374,6 @@ def commons_cat():
             title_without_ns = result['title'].replace('File:', '')
             output += f"**[[cm:{result['title']}|{title_without_ns}]]" \
                       f"（{'、'.join(cats)}）\n"
-        with open(get_data_path().joinpath("commons_cat_result.txt"), "a") as f:
+        with open(get_data_path().joinpath("commons_cat_result.txt"), "a", encoding="utf-8") as f:
             f.write(output)
         save_continue_page(CONT_FILE, page.title())

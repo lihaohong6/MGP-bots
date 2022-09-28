@@ -117,7 +117,7 @@ def get_links_in_template_deprecated(page: Page) -> List[str]:
 def get_continue_page(file_name: str) -> str:
     path = get_data_path().joinpath(file_name)
     if path.exists():
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     return '!'
 
@@ -151,15 +151,15 @@ def get_page_list(file_name: str, factory: Iterable[Page], cont: str = None, sit
     path = get_data_path().joinpath(file_name)
     if not path.exists():
         pages = list(factory)
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(page.title() for page in pages))
     if cont is not None and cont != '!':
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding="utf-8") as f:
             pages = f.read().split("\n")
         for index, page_name in enumerate(pages):
             if page_name == cont:
                 path = get_data_path().joinpath("temp_page_list.txt")
-                with open(path, 'w') as f:
+                with open(path, 'w', encoding="utf-8") as f:
                     f.write("\n".join(pages[index + 1:]))
                 break
     gen = GeneratorFactory(site=site)
