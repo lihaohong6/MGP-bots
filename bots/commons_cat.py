@@ -282,6 +282,8 @@ def find_image_links(page: Page):
 
 
 CONT_FILE = "commons_cat_continue.txt"
+RESULT_PATH = get_data_path().joinpath("commons_cat_result.txt")
+PAGE_LIST_NAME = "commons_cat_pages.txt"
 
 
 def query_cats(files: Iterable[str]):
@@ -343,20 +345,58 @@ def redo_excluded_files():
 
 
 def remove_duplicates():
-    lines = open(get_data_path().joinpath("in.txt"), "r").read().split("\n")
+    if len(sys.argv) > 3:
+        threshold = int(sys.argv[3])
+    else:
+        threshold = 3
+    pywikibot.output(f"Using {threshold} as threshold.")
+    lines = open(RESULT_PATH, "r", encoding="utf-8").read().split("\n")
+    multiset = dict()
+    for line in lines:
+        multiset[line] = multiset.get(line, 0) + 1
+    black_list = set()
+    for k, v in multiset.items():
+        if v >= threshold:
+            black_list.add(k)
+    output_file = get_data_path().joinpath("commons_cat_removed_dup.txt")
+    with open(output_file, "w", encoding="utf-8") as f:
+        for line in lines:
+            if line not in black_list:
+                f.write(line + "\n")
+        f.write("============ black list ============\n\n")
+        f.write("\n".join(black_list))
+    print("Done.")
 
+
+def reset():
+    files = [get_data_path().joinpath(CONT_FILE), RESULT_PATH, get_data_path().joinpath(PAGE_LIST_NAME)]
+    print("Removing the following files:\n", "\n".join(str(f) for f in files))
+    for f in files:
+        f.unlink(missing_ok=True)
 
 
 def commons_cat():
     gen = GeneratorFactory()
+    dispatchers = {
+        'dup': (remove_duplicates, "Remove duplicates from output. Run this after the main command "
+                                   "to remove suspicious images from the output."),
+        'reset': (reset, "Reset program. Run this before a fresh run. Do not run if you want to continue from a"
+                         "previously interrupted run.")
+    }
     if len(sys.argv) > 2:
+        command = sys.argv[2]
+        if command in dispatchers:
+            dispatchers[command][0]()
+            return
         pywikibot.output(f"Using {sys.argv[2:]} as generator.")
         gen.handle_args(sys.argv[2:])
     else:
-        pywikibot.output(f"No input detected. Searching all vtubers. ")
-        gen.handle_arg("-ns:0")
-        gen.handle_arg("-catr:虚拟UP主")
-    pages = get_page_list(file_name="commons_cat_pages.txt",
+        pywikibot.output("No input detected. You can:")
+        pywikibot.output("1. Input pywikibot style generators and filters.")
+        pywikibot.output("2. Input any command: ")
+        pywikibot.output("\n".join(f"{k}: {v[1]}" for k, v in dispatchers.items()))
+        return
+    pages = get_page_list(file_name=PAGE_LIST_NAME,
                           factory=gen.getCombinedGenerator(preload=False),
                           cont=get_continue_page(CONT_FILE),
                           site=mgp())
@@ -379,6 +419,6 @@ def commons_cat():
             title_without_ns = result['title'].replace('File:', '')
             output += f"**[[cm:{result['title']}|{title_without_ns}]]" \
                       f"（{'、'.join(cats)}）\n"
-        with open(get_data_path().joinpath("commons_cat_result.txt"), "a", encoding="utf-8") as f:
+        with open(RESULT_PATH, "a", encoding="utf-8") as f:
             f.write(output)
         save_continue_page(CONT_FILE, page.title())
