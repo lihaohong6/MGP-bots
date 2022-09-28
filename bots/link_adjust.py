@@ -173,7 +173,7 @@ def link_adjust() -> None:
         page_list = list(search_pages(*args.search))
         pywikibot.output(", ".join(p.title() for p in page_list))
         pages = PreloadingGenerator((p for p in page_list), rate_limit)
-        bot = LinkAdjustBot(site=mgp, generator=pages)
+        bot = LinkAdjustBot(site=mgp(), generator=pages)
         bot.run()
 
 
@@ -183,6 +183,6 @@ def link_adjust_test():
     :return: None
     """
     from utils.sites import mgp
-    sandbox = Page(source=mgp, title="Help:沙盒")
+    sandbox = Page(source=mgp(), title="Help:沙盒")
     sandbox.text = treat_links(sandbox.text)
     sandbox.save(summary=LINK_ADJUST_BOT_SUMMARY + "（测试）", **get_default_save_params())

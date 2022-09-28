@@ -259,7 +259,7 @@ exclude = {'Logo youtube.png', 'Bilibili Logo Blue.svg', 'Bilibilitv-logo.png', 
            '月見夜兰（头部立绘）.png', '猫邮社：竹月芽-2022.png', 'JK Mao logo.png', 'HP member komame.png',
            'Kaguya Luna Tricolor Cross.png', '虚研社：木糖纯（初始立绘）.png', 'Logo fin22.png', '阿梓 头图.png',
            'MarySaionji 500x500(02).png', 'Karuta1.jpg', 'Aria头.jpg', '鶹鸝公式ver.png'}
-exclude = {Page(source=cm, title="File:" + e).title() for e in exclude}
+exclude = {Page(source=cm(), title="File:" + e).title() for e in exclude}
 
 
 def find_image_links(page: Page):
@@ -271,7 +271,7 @@ def find_image_links(page: Page):
                        set(get_commons_links(expanded)))
     result = set()
     for image in images:
-        p = Page(source=cm,
+        p = Page(source=cm(),
                  title="File:" + image if not re.search("[fF]ile:", image, re.IGNORECASE)
                  else image)
         try:
@@ -301,7 +301,7 @@ def query_cats(files: Iterable[str]):
 
 
 def query_templates_for_exceptions():
-    gen = GeneratorFactory(site=mgp)
+    gen = GeneratorFactory(site=mgp())
     gen.handle_arg("-ns:Template")
     gen.handle_arg("-catr:虚拟UP主导航模板")
     pages = gen.getCombinedGenerator(preload=False)
@@ -354,7 +354,7 @@ def commons_cat():
     pages = get_page_list(file_name="commons_cat_pages.txt",
                           factory=gen.getCombinedGenerator(preload=False),
                           cont=get_continue_page(CONT_FILE),
-                          site=mgp)
+                          site=mgp())
     for page in pages:
         files = find_image_links(page)
         output = ""

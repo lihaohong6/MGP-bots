@@ -118,7 +118,7 @@ def filter_page_names(names) -> Tuple[List[str], List[str]]:
     result = []
     problematic = []
     for name in names:
-        p = Page(source=cm, title="File:" + name)
+        p = Page(source=cm(), title="File:" + name)
         try:
             t = p.title()
             result.append(name)
@@ -128,7 +128,7 @@ def filter_page_names(names) -> Tuple[List[str], List[str]]:
 
 
 def commons_image():
-    gen = GeneratorFactory(site=mgp)
+    gen = GeneratorFactory(site=mgp())
     gen.handle_arg('-search:insource:"filepath"')
     # gen.handle_arg('-search:insource:"img.moegirl"')
     pages = get_page_list("commons_image_page_list.txt",
@@ -145,13 +145,13 @@ def commons_image():
     print(mgp_pages)
     pages = []
     for s in page_names:
-        p = Page(source=cm, title="File:" + s)
+        p = Page(source=cm(), title="File:" + s)
         pages.append(p)
         progress[p.title()] = progress[s]
     pages = get_page_list("commons_image_file_list.txt",
                           pages,
                           cont=get_continue_page(COMMONS_CONTINUE_FILE_NAME),
-                          site=cm)
+                          site=cm())
     queue = []
     for page in pages:
         if "非链入使用" not in page.text:

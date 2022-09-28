@@ -25,14 +25,14 @@ def generate_possible_filenames(filename: str):
 class MoveImageBot(SingleSiteBot):
 
     def __init__(self, image_from: str, image_to: str, summary: Optional[str] = None):
-        gen = GeneratorFactory(site=mgp)
+        gen = GeneratorFactory(site=mgp())
         for filename in generate_possible_filenames(image_from):
             gen.handle_arg(f'-search:insource:"{filename}"')
         gen1 = gen.getCombinedGenerator(preload=True)
-        gen2 = PreloadingGenerator(Page(source=mgp, title=p.title())
-                                   for p in FilePage(source=cm, title="File:" + image_from).globalusage())
+        gen2 = PreloadingGenerator(Page(source=mgp(), title=p.title())
+                                   for p in FilePage(source=cm(), title="File:" + image_from).globalusage())
         generator = itertools.chain(gen1, gen2)
-        super().__init__(site=mgp, generator=generator)
+        super().__init__(site=mgp(), generator=generator)
         self.image_from = image_from
         self.from_pattern = "".join("[ _]" if c == ' ' or c == '_' else c
                                     for c in re.escape(image_from).replace(r"\ ", " "))

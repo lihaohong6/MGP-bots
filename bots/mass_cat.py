@@ -57,7 +57,7 @@ def mass_cat():
     for line in open(file_path, 'r', encoding='utf-8').read().splitlines():
         if line[0:2] == '**':
             file_name = re.search(r"\[\[cm:File:([^|]+)\|", line).group(1)
-            file_page = Page(source=cm, title="File:" + file_name)
+            file_page = Page(source=cm(), title="File:" + file_name)
             if skip_page:
                 continue
             while True:
@@ -90,8 +90,8 @@ def mass_cat():
             skip_page = False
             category_blacklist = set()
             page_name = re.search(r"\[\[([^]]+)]", line).group(1)
-            curr_page = Page(source=mgp, title=page_name)
-            curr_cat = Page(source=cm, title="Cat:" + page_name)
+            curr_page = Page(source=mgp(), title=page_name)
+            curr_cat = Page(source=cm(), title="Cat:" + page_name)
             while True:
                 print("Processing " + curr_page.title())
                 response = input("[y]es continue; [n]o, skip page; [r]eplace cat name; [o]pen cat in browser: ")
@@ -103,7 +103,7 @@ def mass_cat():
                         break
                     if response == 'r':
                         cat_name = input("Name? ")
-                        curr_cat = Page(source=cm, title="Cat:" + cat_name)
+                        curr_cat = Page(source=cm(), title="Cat:" + cat_name)
                         break
                     if response == 'b':
                         webbrowser.open(curr_cat.full_url())

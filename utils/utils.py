@@ -202,7 +202,7 @@ def search_pages(*search_strings, preload: bool = True) -> Iterable[Page]:
     :return: Page对象
     """
     from utils.sites import mgp
-    gen = GeneratorFactory(site=mgp)
+    gen = GeneratorFactory(site=mgp())
     gen.handle_arg('-ns:0')
     for s in search_strings:
         gen.handle_arg(f'-search:insource:"{s}"')

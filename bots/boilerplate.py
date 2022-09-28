@@ -98,7 +98,7 @@ def download_boilerplate():
         if '/' == href[0]:
             href = href[1:]
         if 'Template:页面格式/' in href and '/doc' not in href:
-            pages.append(Page(source=mgp, title=href))
+            pages.append(Page(source=mgp(), title=href))
 
     # find all revision of all pages and add all comments into black list
     result = set()
