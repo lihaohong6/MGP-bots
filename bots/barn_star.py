@@ -37,7 +37,7 @@ def auto_star(template_name: str, print_contributions: bool = True, send_stars: 
               body: str = ""):
     file_name = Path("data/{}.pickle".format(template_name))
     if not file_name.exists():
-        write_contributions_to_file(get_links_in_template(get_page('T' + template_name)), file_name)
+        write_contributions_to_file(get_links_in_template(get_page('T:' + template_name)), file_name)
     with open(file_name, "rb") as f:
         contributions = pickle.load(f)
     contrib_list = list(sorted(contributions.items(), key=lambda t: t[1][0], reverse=True))
