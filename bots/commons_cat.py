@@ -342,6 +342,11 @@ def redo_excluded_files():
         out.write(line + "\n")
 
 
+def remove_duplicates():
+    lines = open(get_data_path().joinpath("in.txt"), "r").read().split("\n")
+
+
+
 def commons_cat():
     gen = GeneratorFactory()
     if len(sys.argv) > 2:
