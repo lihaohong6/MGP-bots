@@ -1,6 +1,8 @@
 import re
+import sys
 from typing import Iterable
 
+import pywikibot
 import requests
 from pywikibot import Page
 from pywikibot.exceptions import InvalidTitleError
@@ -279,7 +281,7 @@ def find_image_links(page: Page):
     return result.difference(exclude)
 
 
-CONT_FILE = "vtuber_commons_cat_continue.txt"
+CONT_FILE = "commons_cat_continue.txt"
 
 
 def query_cats(files: Iterable[str]):
@@ -316,7 +318,7 @@ def query_templates_for_exceptions():
 
 def exclude_removed_pages():
     # text to process
-    fin1 = open(get_data_path().joinpath("vtuber_commons_cat_result.txt"), "r")
+    fin1 = open(get_data_path().joinpath("commons_cat_result.txt"), "r")
     # modified list with potential deletions
     fin2 = open(get_data_path().joinpath("in2.txt"), "r")
     name_list = fin2.read()
@@ -340,11 +342,16 @@ def redo_excluded_files():
         out.write(line + "\n")
 
 
-def vtuber_commons_cat():
+def commons_cat():
     gen = GeneratorFactory()
-    gen.handle_arg("-ns:0")
-    gen.handle_arg("-catr:虚拟UP主")
-    pages = get_page_list(file_name="vtuber_commons_cat_pages.txt",
+    if len(sys.argv) > 2:
+        pywikibot.output(f"Using {sys.argv[2:]} as generator.")
+        gen.handle_args(sys.argv[2:])
+    else:
+        pywikibot.output(f"No input detected. Searching all vtubers. ")
+        gen.handle_arg("-ns:0")
+        gen.handle_arg("-catr:虚拟UP主")
+    pages = get_page_list(file_name="commons_cat_pages.txt",
                           factory=gen.getCombinedGenerator(preload=False),
                           cont=get_continue_page(CONT_FILE),
                           site=mgp)
@@ -367,6 +374,6 @@ def vtuber_commons_cat():
             title_without_ns = result['title'].replace('File:', '')
             output += f"**[[cm:{result['title']}|{title_without_ns}]]" \
                       f"（{'、'.join(cats)}）\n"
-        with open(get_data_path().joinpath("vtuber_commons_cat_result.txt"), "a") as f:
+        with open(get_data_path().joinpath("commons_cat_result.txt"), "a") as f:
             f.write(output)
         save_continue_page(CONT_FILE, page.title())

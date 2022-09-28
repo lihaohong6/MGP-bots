@@ -13,7 +13,7 @@ from bots.mass_cat import mass_cat
 from bots.move_image import move_image
 from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
-from bots.vtuber_commons_cat import vtuber_commons_cat
+from bots.commons_cat import commons_cat
 from utils.config import get_data_path
 from utils.logger import setup_logger
 
@@ -22,7 +22,7 @@ bots: Dict[str, Callable] = {
     'link_adjust': link_adjust,
     'move_image': move_image,
     'commons_image': commons_image,
-    'vtuber_commons_cat': vtuber_commons_cat,
+    'commons_cat': commons_cat,
     'add_template': add_template,
     'boilerplate': run_boilerplate_bot,
     'isbn': isbn_adjust,
