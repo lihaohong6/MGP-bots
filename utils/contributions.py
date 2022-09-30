@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Tuple, List, Iterable, Dict, Set
 
+import pywikibot
 from pywikibot import Page
 from pywikibot.page import Revision
 
@@ -55,6 +56,6 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path):
         if page.title() in completed:
             continue
         process_page(contributions, page)
-        get_logger().info(f"{index}/{len(pages)} ")
+        pywikibot.output(f"{index}/{len(pages)} ")
         with open(temp_file, "wb") as f:
             pickle.dump(contributions, f, protocol=pickle.HIGHEST_PROTOCOL)
