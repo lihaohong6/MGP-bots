@@ -8,7 +8,7 @@ mylang = 'mgp'
 family = 'mgp'
 
 usernames['mirror']['*'] = 'Lihb'
-usernames['*']['*'] = 'Lihaohong'
+usernames['*']['*'] = 'LihaohongBot'
 password_file = "user-password.py"
 
 # increase if WAF is frequently encountered
