@@ -44,9 +44,9 @@ def treat_isbn(text: str) -> str:
     for link in parsed.wikilinks:
         blacklist.add(link.string)
     for link in parsed.external_links:
-        blacklist.update(link.string)
+        blacklist.add(link.string)
     for link in re.findall("https?://" + r"""((?![ 　\]{}<|\n])[ -~])*""", text):
-        blacklist.update(link)
+        blacklist.add(link)
     while True:
         # re.sub sometimes doesn't work for multiple isbn,
         # so apply sub repeatedly

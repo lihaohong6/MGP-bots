@@ -23,7 +23,8 @@ class TestIsbn(TestCase):
     def test_keep_isbn(self):
         texts = ["joijoifwjoiew", "ISBN", "ISBN 123啊", "|image=ISBN978-7-5581-8236-5.jpg",
                  "[[Special:网络书源/978-7-5366-9396-8|ISBN 978-7-5366-9396-8]]",
-                 "https://www.editor.co.jp/press/ISBN/ISBN978-4-88888-933-9.htm"]
+                 "https://www.editor.co.jp/press/ISBN/ISBN978-4-88888-933-9.htm",
+                 "[https://google.com ISBN978-7-5366-9396-8]"]
         for t in texts:
             self.assertEqual(t, treat_isbn(t))
 
