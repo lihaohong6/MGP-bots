@@ -5,7 +5,9 @@ from typing import Tuple, List, Iterable, Dict, Set
 
 import pywikibot
 from pywikibot import Page
+from pywikibot.exceptions import NoPageError
 from pywikibot.page import Revision
+from pywikibot.pagegenerators import PreloadingGenerator
 
 from utils.logger import get_logger
 from utils.mgp import get_page
@@ -29,7 +31,7 @@ def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_
 
 
 def process_page(contributions, page: Page):
-    if page.exists() and page.namespace().id == 0:
+    try:
         revisions: List[Revision] = list(page.revisions(reverse=True))
         prev_bytes = 0
         for revision in revisions:
@@ -41,6 +43,8 @@ def process_page(contributions, page: Page):
                                                    byte_diff,
                                                    page.title())
             prev_bytes = byte_count
+    except NoPageError:
+        return
 
 
 def write_contributions_to_file(gen: Iterable[Page], temp_file: Path):
@@ -52,10 +56,13 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path):
         contributions = pickle.load(open(temp_file, "rb"))
         for contribution_info in contributions.values():
             completed.update(set(contribution_info.pages_edited))
-    for index, page in enumerate(pages):
+    pywikibot.output(f"{len(pages)} pages total.")
+    filtered = list(filter(lambda p: p.title() not in completed, pages))
+    pywikibot.output(f"{len(filtered)} pages after filtering completed ones.")
+    for index, page in enumerate(filtered):
         if page.title() in completed:
             continue
         process_page(contributions, page)
-        pywikibot.output(f"{index}/{len(pages)} ")
+        pywikibot.output(f"{index}/{len(filtered)} ")
         with open(temp_file, "wb") as f:
             pickle.dump(contributions, f, protocol=pickle.HIGHEST_PROTOCOL)
