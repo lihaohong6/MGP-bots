@@ -24,7 +24,14 @@ class TestIsbn(TestCase):
         texts = ["joijoifwjoiew", "ISBN", "ISBN 123啊", "|image=ISBN978-7-5581-8236-5.jpg",
                  "[[Special:网络书源/978-7-5366-9396-8|ISBN 978-7-5366-9396-8]]",
                  "https://www.editor.co.jp/press/ISBN/ISBN978-4-88888-933-9.htm",
-                 "[https://google.com ISBN978-7-5366-9396-8]"]
+                 "[https://google.com ISBN978-7-5366-9396-8]",
+                 "{{jk|Something<ref>[https://book.kongfz.com/16761/896940001/ 第五册ISBN7-5386-0229-1/J·140]</ref>}}",
+                 "|别号=乔乔、JOJO、乔斯达桑、大乔、大天使、{{黑幕|简纳桑·江斯特、简江<ref>来自早年吉林美术出版社《勇敢的斗士》（其中"
+                 "[https://book.kongfz.com/16761/896940001/ 第五册ISBN7-5386-0229-1/J·140]、"
+                 "[https://book.douban.com/subject/3939394/ 第八册ISBN9787538602296]）"
+                 "的生草翻译，原因是为了把名字本土化，故意弄的中文谐音，迪奥的名字还被翻译成了狄奥。"
+                 "（顺便一提该版本的实体书在某些网站上可以买到）</ref>}}、<del>面包超人<ref>指更換頭部<del>和DIO面包</del></ref>"
+                 "</del>、{{胡话|猴面包树}}"]
         for t in texts:
             self.assertEqual(t, treat_isbn(t))
 
