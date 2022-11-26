@@ -10,6 +10,7 @@ from bots.commons_image import commons_image
 from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.mass_cat import mass_cat
+from bots.mirror_sync import mirror_sync
 from bots.move_image import move_image
 from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
@@ -26,7 +27,8 @@ bots: Dict[str, Callable] = {
     'add_template': add_template,
     'boilerplate': run_boilerplate_bot,
     'isbn': isbn_adjust,
-    'recent_changes': patrol_recent_changes
+    'recent_changes': patrol_recent_changes,
+    "mirror_sync": mirror_sync
 }
 
 

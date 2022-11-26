@@ -1,5 +1,7 @@
 import datetime
 from abc import ABC
+from copy import deepcopy
+from typing import List, Union
 
 import pywikibot
 from pywikibot import APISite, Page, Timestamp
@@ -12,24 +14,37 @@ from datetime import timezone, datetime, timedelta
 
 def filter_recent_changes(resume_id: int, recent_changes_generator):
     existing_titles = set()
+
+    def process_rc(rc) -> bool:
+        page_title = rc['title']
+        if page_title in existing_titles:
+            return False
+        existing_titles.add(page_title)
+        return True
+
     for item in recent_changes_generator:
         if resume_id is None:
             pywikibot.error("Don't know where to resume. Reading the past 5000 changes")
             resume_id = item['rcid'] - 5000
-        page_title = item['title']
-        if page_title in existing_titles:
-            continue
         if item['rcid'] < resume_id:
             break
-        existing_titles.add(page_title)
-        yield item
+        if 'title' not in item:
+            continue
+        if item['type'] == 'log' and item['logaction'] == 'move':
+            item2 = deepcopy(item)
+            item2['title'] = item['logparams']['target_title']
+            item2['ns'] = item['logparams']['target_ns']
+            if process_rc(item2):
+                yield item2
+        if process_rc(item):
+            yield item
 
 
 class RecentChangesBot(SingleSiteBot, ABC):
     from utils.sites import mgp
 
     def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp(), group_size: int = get_rate_limit(),
-                 ns: str = "0", delay: int = -2, **kwargs):
+                 ns: Union[str, List[str]] = "0", delay: int = -2, **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
         self.group_size = group_size
         self.resume_file = get_data_path().joinpath(bot_name + "_resume.txt")
@@ -48,8 +63,9 @@ class RecentChangesBot(SingleSiteBot, ABC):
                                rc_time.hour, rc_time.minute, rc_time.second,
                                tzinfo=rc_time.tzinfo)
         self.gen = filter_recent_changes(resume_id,
-                                         site.recentchanges(namespaces=ns, bot=None, redirect=False,
-                                                            changetype='edit|new', start=time_start, top_only=True))
+                                         site.recentchanges(namespaces=ns, bot=None,
+                                                            changetype='edit|new|log', start=time_start,
+                                                            top_only=True))
         self._start_ts = pywikibot.Timestamp.now()
 
     def run(self) -> None:

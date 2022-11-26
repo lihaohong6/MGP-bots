@@ -121,7 +121,7 @@ def print_result():
     lines = []
     for u in usernames:
         info = result[u]
-        pages_edited = "、".join(list(info.pages_edited)[:10])
+        pages_edited = "、".join(list(info.pages_edited)[:])
         lines.append(f"|-\n| -{{{u}}}- || {info.edit_count} || {info.byte_count} || {pages_edited}")
     output += "\n".join(lines)
     output += "\n|}"

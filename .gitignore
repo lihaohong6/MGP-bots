@@ -2,6 +2,7 @@
 logs.txt
 data/
 sandbox.py
+sync_pages
 
 # pywikibot generated files
 *.lwp
