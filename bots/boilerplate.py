@@ -34,6 +34,8 @@ def should_remove(text: str) -> bool:
     """
     if "保留这里的注释" in text:
         return False
+    if text in {']]'}:
+        return False
     if text in black_list:
         return True
     return False

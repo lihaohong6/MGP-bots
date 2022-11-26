@@ -45,8 +45,10 @@ def treat_isbn(text: str) -> str:
         blacklist.add(link.string)
     for link in parsed.external_links:
         blacklist.add(link.string)
-    for link in re.findall("https?://" + r"""((?![ 　\]{}<|\n])[ -~])*""", text):
+    for link in re.findall(r"\[https?://[^]]+]", text):
         blacklist.add(link)
+    for link in re.findall("https?://" + r"""(((?![ 　\]{}<|\n])[ -~])*)""", text):
+        blacklist.add(link[0])
     while True:
         # re.sub sometimes doesn't work for multiple isbn,
         # so apply sub repeatedly
