@@ -10,7 +10,8 @@ class TestBoilerplate(TestCase):
 |标题颜色     = 
 |左栏颜色     = 
 |标题字体颜色 = -->
-}}"""]
+}}""",
+                   "aa<!--]]-->aa"]
         for s in strings:
             self.assertEqual(s,
                              treat_boilerplate(s))

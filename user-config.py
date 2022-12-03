@@ -12,7 +12,7 @@ usernames['*']['*'] = 'LihaohongBot'
 password_file = "user-password.py"
 
 # increase if WAF is frequently encountered
-minthrottle = 2
+minthrottle = 0
 # keep the next two for non-bots
 maxthrottle = 20
 put_throttle = 20
