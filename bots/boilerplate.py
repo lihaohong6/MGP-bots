@@ -107,6 +107,9 @@ def download_boilerplate():
     for index, page in enumerate(PreloadingGenerator(pages)):
         print(f"Processing page {index}: " + page.title())
         for revision in page.revisions(content=True):
+            if '*' not in revision:
+                print("Skipping a revision for page titled", page.title())
+                continue
             parsed = wtp.parse(revision['*'])
             for comment in parsed.comments:
                 s = comment.contents.strip()
