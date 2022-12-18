@@ -107,14 +107,14 @@ def download_boilerplate():
     for index, page in enumerate(PreloadingGenerator(pages)):
         print(f"Processing page {index}: " + page.title())
         for revision in page.revisions(content=True):
-            if '*' not in revision:
+            try:
+                parsed = wtp.parse(revision['*'])
+                for comment in parsed.comments:
+                    s = comment.contents.strip()
+                    if s != "":
+                        result.add(s)
+            except AttributeError:
                 print("Skipping a revision for page titled", page.title())
-                continue
-            parsed = wtp.parse(revision['*'])
-            for comment in parsed.comments:
-                s = comment.contents.strip()
-                if s != "":
-                    result.add(s)
 
     # store black list in a file
     BOILERPLATE_PATH.mkdir(parents=True, exist_ok=True)
