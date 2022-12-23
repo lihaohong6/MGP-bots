@@ -5,6 +5,8 @@
 import sys
 from typing import Dict, Callable
 
+from pywikibot import Page, Site
+
 from bots.boilerplate import run_boilerplate_bot
 from bots.commons_image import commons_image
 from bots.isbn import isbn_adjust
@@ -19,6 +21,13 @@ from bots.commons_cat import commons_cat
 from utils.config import get_data_path
 from utils.logger import setup_logger
 
+
+def test():
+    sandbox = Page(source=Site(), title="Help:沙盒")
+    sandbox.text += "\n测试"
+    sandbox.save(summary="测试", tags="Bot", minor=True)
+
+
 bots: Dict[str, Callable] = {
     'mass_cat': mass_cat,
     'link_adjust': link_adjust,
@@ -30,7 +39,8 @@ bots: Dict[str, Callable] = {
     'isbn': isbn_adjust,
     'recent_changes': patrol_recent_changes,
     "mirror_sync": mirror_sync,
-    "links_to_disambig": links_to_disambig
+    "links_to_disambig": links_to_disambig,
+    "test": test
 }
 
 
