@@ -1,41 +1,63 @@
-from typing import Iterator, Dict, List
+from typing import Dict, List
 
 from pywikibot import Page, APISite
-from pywikibot.data.api import QueryGenerator, APIGenerator, Request, PropertyGenerator, ListGenerator
+from pywikibot.data.api import PropertyGenerator
 from pywikibot.pagegenerators import GeneratorFactory
 from pywikibot.tools.itertools import itergroup
 
-from utils.sites import mgp, mirror
+from utils.sites import mgp
 
 site: APISite = mgp()
+# The base page. This page will not be edited. Instead, the bot will create/edit its subpages.
 target_page = Page(source=site, title="User:Lihaohong/链入消歧义页面的条目")
 
 
 def get_disambig_pages():
+    """
+    Get all disambiguation pages in ns0.
+    :return: A generator of all disambiguation pages
+    """
     gen = GeneratorFactory(site=site)
     gen.handle_args(['-ns:0', '-cat:消歧义页'])
     return gen.getCombinedGenerator(preload=False)
 
 
 def index_of(pages: List[Page], title: str):
+    """
+    Get the index of a page in a list
+    :param pages: A list of Page objects
+    :param title: The title of the target page
+    :return: The index of the desired page
+    """
     for index, page in enumerate(pages):
         if page.title() == title:
             return index
-    raise RuntimeError()
+    raise RuntimeError(f"Index of {title} cannot be found because it is not in the list.")
 
 
 def batch_page_links(pages):
+    """
+    Get all pages linked from each page in the list. This is done in batch to reduce the number of requests.
+    :param pages: A list of pages.
+    :return: A parallel list of the pages parameter. Each corresponding element is a list of page titles.
+    """
     gen = PropertyGenerator(prop='links', site=site, pllimit=500, titles="|".join(p.title() for p in pages), plnamespace=0)
     result = [[] for _ in range(50)]
     for page in gen:
         res = []
         if 'links' in page:
             res = [link['title'] for link in page['links']]
+        # results are not in order, so we need to look for the correct index here
         result[index_of(pages, page['title'])] = res
     return result
 
 
 def batch_page_redirects(pages):
+    """
+    Get all pages that redirect to each page in the list. This is done in batch to reduce the number of requests.
+    :param pages: A list of pages.
+    :return: A parallel list of the pages parameter. Each corresponding element is a list of page titles.
+    """
     gen = PropertyGenerator(prop='redirects', site=site, rdlimit=500, titles="|".join(p.title() for p in pages),
                             rdnamespace=0)
     result = [[] for _ in range(50)]
@@ -48,10 +70,17 @@ def batch_page_redirects(pages):
 
 
 def create_wiki_table(disambig_pages):
+    """
+    Sends requests to the server to build the final wikitable.
+    :param disambig_pages: A list of disambiguation pages to be in the final table
+    :return: A wikitable string consisting of disambiguation pages, their redirects,
+    and pages that link to them.
+    """
     result = ['{| class="wikitable"',
               "|+",
               "! 消歧义页面 !! 链入消歧义页面的条目"]
     curr, total = 0, len(disambig_pages)
+    # process pages in batches of 50
     for page_batch in itergroup(disambig_pages, size=50):
         links_batch = batch_page_links(page_batch)
         redirects_batch = batch_page_redirects(page_batch)
@@ -64,6 +93,7 @@ def create_wiki_table(disambig_pages):
             problematic_pages = []
             fine_pages = []
             for p in linked_from:
+                # links is the white list
                 if p.title() not in links:
                     problematic_pages.append(p)
                 else:
@@ -81,15 +111,23 @@ def create_wiki_table(disambig_pages):
 
 
 def categorize(pages: List[Page]) -> Dict[str, List[Page]]:
+    """
+    Put a list of pages in several buckets based on the pinyin of the first character.
+    :param pages: A list of pages to the processed.
+    :return: A dictionary mapping the name of the bucket to the corresponding list.
+    """
     import pinyin
+    # this can be adjusted to any arbitrary list.
     buckets = ['A-C', 'D-F', 'G-I', 'J-L', 'M-O', 'P-R', 'S-U', 'V-X', 'Y-Z', '其它']
+    # initially, each bucket is an empty list
     result = dict((b, []) for b in buckets)
     for page in pages:
+        # transform the title to a single upper case letter (or a special character)
         title_transformed = pinyin.get_initial(page.title()[0])
         if title_transformed.isascii():
             title_transformed = title_transformed.upper()
         for bucket in buckets:
-            # try each bucket; if the last one is reached,
+            # try each bucket; if the last one is reached, we have a special character
             if '-' in bucket:
                 start, end = bucket.split('-')
                 if start <= title_transformed <= end:
