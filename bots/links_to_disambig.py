@@ -101,6 +101,7 @@ def categorize(pages: List[Page]) -> Dict[str, List[Page]]:
 
 
 def run_links_to_disambig():
+    site.login()
     disambig_pages = list(get_disambig_pages())
     print("All disambig pages fetched.")
     categories = categorize(disambig_pages)
