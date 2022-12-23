@@ -20,10 +20,11 @@ from bots.template_adder import add_template
 from bots.commons_cat import commons_cat
 from utils.config import get_data_path
 from utils.logger import setup_logger
+from utils.sites import mgp
 
 
 def test():
-    sandbox = Page(source=Site(), title="Help:沙盒")
+    sandbox = Page(source=mgp(), title="Help:沙盒")
     sandbox.text += "\n测试"
     sandbox.save(summary="测试", tags="Bot", minor=True)
 
