@@ -29,10 +29,15 @@ def get_white_list():
 
 class RCDownloadBot(RecentChangesBot):
     def __init__(self):
-        super().__init__("mirror_sync", ns=[0, 'Template', '萌娘百科', 'Module', 'Widget', 'Help', 'Category'], delay=-12)
+        super().__init__("mirror_sync",
+                         ns=[0, 'Template', '萌娘百科', 'Module', 'Widget', 'Help', 'Category'],
+                         delay=0)
         self.white_list = get_white_list()
 
     def treat(self, page: Page) -> None:
+        change = self.current_change
+        if change['type'] == 'log' and change['logaction'] == 'move' and change['logparams']['target_ns'] != 2:
+            page.move(change['logparams']['target_title'])
         title = page.title(with_ns=True)
         if title in self.white_list:
             return

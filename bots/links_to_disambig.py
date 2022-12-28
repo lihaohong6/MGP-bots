@@ -1,3 +1,4 @@
+import sys
 from typing import Dict, List
 
 from pywikibot import Page, APISite
@@ -8,8 +9,6 @@ from pywikibot.tools.itertools import itergroup
 from utils.sites import mgp
 
 site: APISite = mgp()
-# The base page. This page will not be edited. Instead, the bot will create/edit its subpages.
-target_page = Page(source=site, title="User:Lihaohong/链入消歧义页面的条目")
 
 
 def get_disambig_pages():
@@ -140,13 +139,17 @@ def categorize(pages: List[Page]) -> Dict[str, List[Page]]:
 
 def run_links_to_disambig():
     site.login()
+    if len(sys.argv) < 3:
+        print("Please input target page title.")
+        return
+    target_page = sys.argv[2]
     disambig_pages = list(get_disambig_pages())
     print("All disambig pages fetched.")
     categories = categorize(disambig_pages)
     print("All pages categorized by initials.")
     for page_name, pages in categories.items():
         print("Processing " + page_name)
-        page = Page(source=site, title=target_page.title() + "/" + page_name)
+        page = Page(source=site, title=target_page + "/" + page_name)
         page.text = create_wiki_table(pages)
         page.save(summary="机器人试运行", botflag=True, tags="Bot")
 

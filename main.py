@@ -18,6 +18,7 @@ from bots.move_image import move_image
 from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
 from bots.commons_cat import commons_cat
+from bots.template_splitter import run_template_splitter
 from utils.config import get_data_path
 from utils.logger import setup_logger
 from utils.sites import mgp
@@ -41,6 +42,7 @@ bots: Dict[str, Callable] = {
     'recent_changes': patrol_recent_changes,
     "mirror_sync": mirror_sync,
     "links_to_disambig": links_to_disambig,
+    "template_splitter": run_template_splitter,
     "test": test
 }
 

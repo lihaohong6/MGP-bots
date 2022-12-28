@@ -21,7 +21,6 @@ def filter_recent_changes(resume_id: int, recent_changes_generator):
             return False
         existing_titles.add(page_title)
         return True
-
     for item in recent_changes_generator:
         if resume_id is None:
             pywikibot.error("Don't know where to resume. Reading the past 5000 changes")
@@ -30,21 +29,24 @@ def filter_recent_changes(resume_id: int, recent_changes_generator):
             break
         if 'title' not in item:
             continue
+        is_move = False
+        item2 = None
         if item['type'] == 'log' and item['logaction'] == 'move':
+            is_move = True
             item2 = deepcopy(item)
             item2['title'] = item['logparams']['target_title']
             item2['ns'] = item['logparams']['target_ns']
-            if process_rc(item2):
-                yield item2
-        if process_rc(item):
+        if process_rc(item) or is_move:
             yield item
+        if item2 is not None and process_rc(item2):
+            yield item2
 
 
 class RecentChangesBot(SingleSiteBot, ABC):
     from utils.sites import mgp
 
     def __init__(self, bot_name: str, resume_id: int = None, site: APISite = mgp(), group_size: int = get_rate_limit(),
-                 ns: Union[str, List[str]] = "0", delay: int = -2, **kwargs):
+                 ns: Union[str, List[str]] = "0", delay: int = -2, change_type: str = 'edit|new|log', **kwargs):
         super(RecentChangesBot, self).__init__(site=site, **kwargs)
         self.group_size = group_size
         self.resume_file = get_data_path().joinpath(bot_name + "_resume.txt")
@@ -64,8 +66,9 @@ class RecentChangesBot(SingleSiteBot, ABC):
                                tzinfo=rc_time.tzinfo)
         self.gen = filter_recent_changes(resume_id,
                                          site.recentchanges(namespaces=ns, bot=None,
-                                                            changetype='edit|new|log', start=time_start,
+                                                            changetype=change_type, start=time_start,
                                                             top_only=True))
+        self.current_change = None
         self._start_ts = pywikibot.Timestamp.now()
 
     def run(self) -> None:
@@ -83,6 +86,7 @@ class RecentChangesBot(SingleSiteBot, ABC):
                                   groupsize=self.group_size)
         for index, page in enumerate(gen):
             try:
+                self.current_change = changes[index]
                 self.treat(page)
             except Exception as e:
                 print(e)
