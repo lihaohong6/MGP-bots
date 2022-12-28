@@ -151,7 +151,7 @@ def run_links_to_disambig():
         print("Processing " + page_name)
         page = Page(source=site, title=target_page + "/" + page_name)
         page.text = create_wiki_table(pages)
-        page.save(summary="机器人试运行", botflag=True, tags="Bot")
+        page.save(summary="更新列表", botflag=True, tags="Bot")
 
 
 def links_to_disambig():
