@@ -1,11 +1,9 @@
 import re
 import webbrowser
-from typing import Any
 
-import pywikibot.bot
+import wikitextparser as wtp
 from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
-import wikitextparser as wtp
 
 from utils.logger import get_logger
 from utils.utils import find_templates, save_continue_page, get_continue_page

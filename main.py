@@ -5,15 +5,16 @@
 import sys
 from typing import Dict, Callable
 
-from pywikibot import Page, Site
+from pywikibot import Page
 
 from bots.boilerplate import run_boilerplate_bot
 from bots.commons_image import commons_image
 from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.links_to_disambig import links_to_disambig
-from bots.mass_cat import mass_cat
+from bots.deprecated.mass_cat import mass_cat
 from bots.mirror_sync import mirror_sync
+from bots.mobilization_tally import mobilization_tally
 from bots.move_image import move_image
 from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
@@ -43,6 +44,7 @@ bots: Dict[str, Callable] = {
     "mirror_sync": mirror_sync,
     "links_to_disambig": links_to_disambig,
     "template_splitter": run_template_splitter,
+    'mobilization_tally': mobilization_tally,
     "test": test
 }
 
