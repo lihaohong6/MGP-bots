@@ -115,6 +115,11 @@ class TestLinkAdjust(TestCase):
         self.assertEqual("{{黑幕|https://space.bilibili.com/674746763}}",
                          process_text_bb(url))
 
+    def test_bugs(self):
+        url = "https://b23.tv/jsuQZf3"
+        self.assertEqual("https://www.bilibili.com/read/cv20732933",
+                         process_text_bb(url))
+
     def test_long(self):
         expected = """**在练自由搏击（{{lj|キックボクシング}}）{{黑幕|本想瘦腿，结果上半身变瘦}}<ref>[https://www.bilibili.com/video/BV1Jz4y1U7BA 【切片中字】胸部装甲被削弱的爱美社长？]</ref>
 

@@ -9,7 +9,7 @@ from pywikibot import APISite, Page, User
 from wikitextparser import WikiText, Section
 
 from utils.sites import get_site_by_name
-from utils.utils import adjust_trailing_newline
+from utils.utils import adjust_trailing_newline, find_templates
 
 site: APISite
 
@@ -76,7 +76,7 @@ def update_scoreboard(target: str, **kwargs):
     parsed = wtp.parse(contributions_page.text)
     current_user = None
     # get scoreboard
-    scoreboard: Dict[str, Dict[str, int]] = dict()
+    scoreboard: Dict[str, Dict[str, float]] = dict()
     scoreboard_columns = get_scoreboard_columns(parsed)
     for section in parsed.sections:
         if section.level == USERNAME_SECTION_LEVEL:
@@ -93,7 +93,7 @@ def update_scoreboard(target: str, **kwargs):
     SCORE_COLUMN = "总分"
     scoreboard_columns.append(SCORE_COLUMN)
     for user in scoreboard:
-        scoreboard[user][SCORE_COLUMN] = sum(score for score in scoreboard[user].values())
+        scoreboard[user][SCORE_COLUMN] = adjust(sum(score for score in scoreboard[user].values()))
     user_ranking = sorted(scoreboard.keys(),
                           key=lambda username: (-scoreboard[username][SCORE_COLUMN], username))
 
@@ -105,9 +105,17 @@ def update_scoreboard(target: str, **kwargs):
         row = scoreboard[user]
         table.append("|-")
         line = f"| {ranking + 1} || -{{[[U:{user}|{user}]]}}- || " + \
-               " || ".join(str(row[column_name])
+               " || ".join(str(adjust(row[column_name]))
                            for column_name in scoreboard_columns)
         table.append(line)
+    # the last row is an unsortable row to calculate the total score
+    table.append("|- class=\"sortbottom\"")
+    totals = []
+    for column_name in scoreboard_columns:
+        total = sum(individual_scores[column_name]
+                    for individual_scores in scoreboard.values())
+        totals.append(str(adjust(total)))
+    table.append("! 总和 !! !! " + " !! ".join(totals))
     table.append("|}")
 
     # find the appropriate section to edit on the page
@@ -124,11 +132,14 @@ def update_scoreboard(target: str, **kwargs):
         return
     target.contents = "\n" + "\n".join(table)
     scoreboard_page.text = str(parsed)
-    scoreboard_page.save(summary="更新排行榜", minor=True, tags="Bot")
+    scoreboard_page.save(summary="更新排行榜（试运行）", minor=True, tags="Bot")
 
 
-def page_creation_filter(predicate: Callable[[Page], bool]):
-    return lambda c: c['new'] and predicate(c['page'])
+def contribution_filter(c, new: bool = True, ns: int = 0):
+    return (not new or
+            'new' in c or
+            ('minor' in c and "移动页面" in c['comments'] and "[[User:" in c['comments'])) and \
+           c['ns'] == ns
 
 
 def get_categories(page: Page):
@@ -136,7 +147,7 @@ def get_categories(page: Page):
 
 
 def vj_create_song(contribution):
-    if not contribution['new'] or contribution['ns'] != 0:
+    if not contribution_filter(contribution):
         return None
     page: Page = contribution['page']
     categories = get_categories(page)
@@ -151,7 +162,7 @@ def vj_create_song(contribution):
 
 
 def vj_create_producer_template(contribution):
-    if not contribution['new'] or contribution['ns'] != 10:
+    if not contribution_filter(contribution, ns=10):
         return None
     page: Page = contribution['page']
     cats = get_categories(page)
@@ -161,14 +172,85 @@ def vj_create_producer_template(contribution):
         return page.title(as_link=True, allow_interwiki=False) + f"（+{score}）（{links_count}个链接）"
 
 
+def count_bytes_simple(text: str) -> int:
+    return len(text.encode('utf-8'))
+
+
+def count_bytes(text: str) -> int:
+    initial = count_bytes_simple(text)
+    parsed = wtp.parse(text)
+    templates = ['Producer_Song', 'Album Infobox', 'Tracklist']
+    subtract = []
+    for t in templates:
+        template_bytes = 0
+        for found in find_templates(parsed.templates, t):
+            template_bytes += count_bytes_simple(str(found))
+        subtract.append(template_bytes)
+    return round(initial - sum(subtract) / 2)
+
+
+def vj_create_producer(contribution):
+    if not contribution_filter(contribution):
+        return None
+    page: Page = contribution['page']
+    cats = get_categories(page)
+    if 'VOCALOID职人' in cats or 'VOCALOID团体' in cats:
+        simple_count = count_bytes_simple(page.text)
+        byte_count = count_bytes(page.text)
+        return f"{page.title(as_link=True, allow_interwiki=False)}（+{adjust(byte_count / 200)}）" \
+               f"（{simple_count}字节，调整后{byte_count}字节）"
+
+
+def vj_furigana(contribution):
+    if not contribution_filter(contribution, new=False):
+        return None
+    page: Page = contribution['page']
+    if '歌词注音' in contribution['comment']:
+        return page.title(as_link=True, allow_interwiki=False) + "（+0.2）"
+
+
+def vj_translate(contribution):
+    if not contribution_filter(contribution, new=False):
+        return None
+    page: Page = contribution['page']
+    if '翻译歌词' not in contribution['comment']:
+        return None
+    lyrics_kai = find_templates(wtp.parse(page.text).templates, "LyricsKai")
+    if len(lyrics_kai) != 1:
+        return None
+    lyrics_kai = lyrics_kai[0]
+    translation = lyrics_kai.get_arg("translated")
+    if translation is None:
+        return None
+    byte_count = count_bytes_simple(translation.value)
+    return page.title(as_link=True, allow_interwiki=False) + f"（+{adjust(byte_count / 150)}）（{byte_count}字节）"
+
+
+def vj_vocaran(contribution):
+    if not contribution_filter(contribution):
+        return None
+    page: Page = contribution['page']
+    cats = get_categories(page)
+    if '周刊VOCAL Character & UTAU排行榜' in cats:
+        return page.title(as_link=True, allow_interwiki=False) + "（+25）"
+
+
 Preset = Dict[str, Callable]
+
+
+def adjust(num: float):
+    return round(num, 2)
 
 
 def get_preset(preset: str) -> Preset:
     presets = {
         'vj': {
             '创建歌曲': vj_create_song,
-            '创建大家族模板': vj_create_producer_template
+            '歌词翻译': vj_translate,
+            '歌词注音': vj_furigana,
+            '创建周刊': vj_vocaran,
+            '创建大家族模板': vj_create_producer_template,
+            '创建P主': vj_create_producer,
         }
     }
     if preset not in presets:
@@ -177,12 +259,14 @@ def get_preset(preset: str) -> Preset:
 
 
 def add_results(results: List[str], section: Section):
-    links = [link.title for link in section.wikilinks]
+    links = set(link.title for link in section.wikilinks)
     section.contents = adjust_trailing_newline(section.contents, 1)
     for result in results:
         parsed = wtp.parse(result)
-        if parsed.wikilinks[0].title in links:
+        title = parsed.wikilinks[0].title
+        if title in links:
             continue
+        links.add(title)
         section.contents += "#" + result + "\n"
 
 
@@ -247,7 +331,7 @@ def list_contributions(target: str, preset: str, **kwargs):
             target_section = parsed.sections[-1]
         apply_preset(preset, contributions, target_section)
     contributions_page.text = str(parsed)
-    contributions_page.save(summary="更新计分板", minor=True)
+    contributions_page.save(summary="更新计分板（试运行）", minor=True)
 
 
 def mobilization_tally():

@@ -96,7 +96,7 @@ def expand_b23(text: str) -> str:
         response = requests.get(url)
         final_url = response.url
         if final_url.strip() == url.strip() or \
-                (response.history and len(response.history) > 2) or \
+                (response.status_code != 200 and response.history and len(response.history) > 2) or \
                 "error" in final_url:
             pywikibot.error("Link " + url + " has problematic response.")
             return url
