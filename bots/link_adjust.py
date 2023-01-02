@@ -61,7 +61,9 @@ USELESS_BB_PARAMS = {
     # https://b23.tv/dl5XUl9
     'mid',
     # https://b23.tv/SfzFfn
-    'native.theme', 'night', 'a_id', 's_id'
+    'native.theme', 'night', 'a_id', 's_id',
+    # https://b23.tv/HNeNlxa
+    'buvid', 'up_id'
 }
 
 SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',

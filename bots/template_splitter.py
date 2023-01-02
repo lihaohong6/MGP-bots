@@ -7,6 +7,7 @@ from pywikibot import Page
 from pywikibot.pagegenerators import PreloadingGenerator
 
 from utils.sites import mgp, get_site_by_name
+from utils.utils import find_templates
 
 site = mgp()
 
@@ -46,7 +47,7 @@ def template_splitter(name, aliases, limit: int = 50):
             else:
                 pages_dict[page_title] = page
             parsed = wtp.parse(page.text)
-            target_template = [t for t in parsed.templates if t.name in template_names]
+            target_template = find_templates(parsed.templates, *template_names)
             if len(target_template) != 1:
                 print("Page " + page.title() +
                       " has no template with the desired name."
@@ -67,7 +68,7 @@ def template_splitter(name, aliases, limit: int = 50):
             print("Edit limit reached. Aborting...")
             break
         if page_title in changed_pages:
-            page.save(summary="批量添加大家族模板参数", minor=True, tags="Bot", force=True)
+            page.save(summary="批量添加大家族模板参数", minor=True, tags="Bot", force=True, watch="nochange")
             counter += 1
 
 
