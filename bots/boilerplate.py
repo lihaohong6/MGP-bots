@@ -21,7 +21,7 @@ AUTO_PATH = BOILERPLATE_PATH.joinpath("auto.pickle")
 if AUTO_PATH.exists():
     black_list = set(pickle.load(open(AUTO_PATH, "rb")))
 else:
-    print("Black list does not exist!")
+    pywikibot.warning("Black list does not exist! Please download first.")
     black_list = set()
 
 

@@ -81,7 +81,6 @@ def get_last_update(usernames: List[str], event_start: Optional[datetime]) -> Di
     if event_start_key not in result:
         result[event_start_key] = get_today()
     event_start = result[event_start_key]
-    print(result)
     for username in usernames:
         if username not in result:
             result[username] = event_start
@@ -121,7 +120,6 @@ def list_contributions(target: str, preset: str, event_start: Optional[datetime]
     users = get_mobilization_participants(target)
     usernames = [u.username for u in users]
     last_update = get_last_update(usernames, event_start)
-    print("Participants: " + ", ".join(u.username for u in users))
     contributions_page = Page(source=get_site(), title=target + "/计分板")
     parsed = wtp.parse(contributions_page.text)
     preset = get_preset(preset)
