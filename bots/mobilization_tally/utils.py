@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import wikitextparser as wtp
 from pywikibot import APISite
 

@@ -2,6 +2,7 @@ import re
 import signal
 import time
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 from typing import List, Set, Iterable
 
 import wikitextparser as wtp
@@ -210,3 +211,14 @@ def search_pages(*search_strings, preload: bool = True) -> Iterable[Page]:
     if preload:
         gen = PreloadingGenerator(gen, groupsize=get_rate_limit())
     return gen
+
+
+CST: timezone = timezone(offset=timedelta(hours=8))
+
+
+def parse_time(timestamp: str, cst: bool = False) -> datetime:
+    parsed = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')\
+        .replace(tzinfo=timezone.utc)
+    if cst:
+        parsed = parsed.astimezone(CST)
+    return parsed

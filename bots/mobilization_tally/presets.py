@@ -1,4 +1,4 @@
-from typing import Dict, Callable
+from typing import Dict, Callable, List
 
 import wikitextparser as wtp
 from pywikibot import Page
@@ -91,19 +91,23 @@ def vj_vocaran(contribution):
 
 
 Preset = Dict[str, Callable]
+__presets = {
+    'vj': {
+        '创建歌曲': vj_create_song,
+        '歌词翻译': vj_translate,
+        '歌词注音': vj_furigana,
+        '创建周刊': vj_vocaran,
+        '创建大家族模板': vj_create_producer_template,
+        '创建P主': vj_create_producer,
+    }
+}
+
+
+def get_preset_names() -> List[str]:
+    return list(__presets.keys())
 
 
 def get_preset(preset: str) -> Preset:
-    presets = {
-        'vj': {
-            '创建歌曲': vj_create_song,
-            '歌词翻译': vj_translate,
-            '歌词注音': vj_furigana,
-            '创建周刊': vj_vocaran,
-            '创建大家族模板': vj_create_producer_template,
-            '创建P主': vj_create_producer,
-        }
-    }
-    if preset not in presets:
+    if preset not in __presets:
         raise RuntimeError("Preset named " + preset + " not found.")
-    return presets[preset]
+    return __presets[preset]

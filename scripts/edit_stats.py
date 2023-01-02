@@ -4,13 +4,14 @@ from pywikibot import Timestamp
 
 import init_script
 from utils.sites import mgp, mirror
+from utils.utils import parse_time
 
 site = mgp()
 cst = timezone(timedelta(hours=8), 'CST')
 now = Timestamp.now().astimezone(timezone.utc)
 changes = site.recentchanges(end=now + timedelta(hours=-24), start=now, bot=False)
 changes = list(changes)
-timestamps = [datetime.strptime(c['timestamp'], '%Y-%m-%dT%H:%M:%SZ') + timedelta(hours=8)
+timestamps = [parse_time(c['timestamp'], cst=True)
               for c in changes]
 print(timestamps[0], timestamps[-1])
 buckets = dict((i, 0) for i in range(24))
