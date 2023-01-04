@@ -1,5 +1,6 @@
-from typing import Dict, Callable, List
+from typing import Dict, Callable, List, Optional
 
+import pywikibot
 import wikitextparser as wtp
 from pywikibot import Page
 
@@ -44,16 +45,60 @@ def vj_create_producer_template(contribution):
         return page.title(as_link=True, allow_interwiki=False) + f"（+{score}）（{links_count}个链接）"
 
 
+article_cats = {
+    # P主
+    'VOCALOID职人', 'VOCALOID团体',
+    # 歌姬
+    'CeVIO角色', 'DeepVocal角色', 'Mac音角色', '袅袅虚拟歌手角色', 'Sharpkey角色', 'Synthesizer V角色', 'UTAU角色',
+    'VOCALOID角色', 'VOICEROID角色', 'VocalSharp角色', 'Vogen角色', 'X Studio角色',
+    # 引擎
+    '歌声合成软件',
+    # 演唱会
+    '初音未来演唱会'}
+
+
 def vj_create_producer(contribution):
     if not contribution_filter(contribution):
         return None
     page: Page = contribution['page']
     cats = get_categories(page)
-    if 'VOCALOID职人' in cats or 'VOCALOID团体' in cats:
+    if len(list(article_cats.intersection(cats))) > 0:
         simple_count = count_bytes_simple(page.text)
         byte_count = count_bytes(page.text)
         return f"{page.title(as_link=True, allow_interwiki=False)}（+{adjust(byte_count / 200)}）" \
-               f"（{simple_count}字节，调整后{byte_count}字节）"
+               f"（{simple_count}字节，调整后为{byte_count}字节）"
+
+
+def expand_page_count_bytes(page: Page, revid: int):
+    revisions = page.revisions(content=True)
+    for rev in revisions:
+        if rev['revid'] == revid:
+            cur_content = rev['*']
+            prev_content = next(revisions)['*']
+            break
+    else:
+        pywikibot.error("No revision with the desired revid found.")
+        return None
+    raw_byte_diff = count_bytes_simple(cur_content) - count_bytes_simple(prev_content)
+    byte_diff = count_bytes(cur_content) - count_bytes(prev_content)
+    if byte_diff < 0:
+        byte_diff = 0
+    return byte_diff, raw_byte_diff
+
+
+def vj_expand_article(contribution):
+    if not contribution_filter(contribution, new=False):
+        return None
+    page: Page = contribution['page']
+    cats = get_categories(page)
+    if len(list(article_cats.intersection(cats))) > 0:
+        res = expand_page_count_bytes(page, contribution['revid'])
+        if res is None:
+            return None
+        byte_diff, raw_byte_diff = res
+        point = adjust(byte_diff / 200)
+        return page.title(as_link=True, allow_interwiki=False) + \
+               f"（+{point}）（增加{raw_byte_diff}字节，换算为{byte_diff}有效字节）"
 
 
 def vj_furigana(contribution):
@@ -90,7 +135,7 @@ def vj_vocaran(contribution):
         return page.title(as_link=True, allow_interwiki=False) + "（+25）"
 
 
-Preset = Dict[str, Callable]
+Preset = Dict[str, Callable[[Dict], Optional[str]]]
 __presets = {
     'vj': {
         '创建歌曲': vj_create_song,

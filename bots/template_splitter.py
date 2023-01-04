@@ -6,6 +6,7 @@ import wikitextparser as wtp
 from pywikibot import Page
 from pywikibot.pagegenerators import PreloadingGenerator
 
+from utils.config import get_default_save_params
 from utils.sites import mgp, get_site_by_name
 from utils.utils import find_templates
 
@@ -68,7 +69,7 @@ def template_splitter(name, aliases, limit: int = 50):
             print("Edit limit reached. Aborting...")
             break
         if page_title in changed_pages:
-            page.save(summary="批量添加大家族模板参数", minor=True, tags="Bot", force=True, watch="nochange")
+            page.save(summary="批量添加大家族模板参数", force=True, **get_default_save_params())
             counter += 1
 
 

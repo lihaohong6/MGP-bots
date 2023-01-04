@@ -97,7 +97,8 @@ def get_user_contributions(username: str, last_update: Dict) -> list:
             'ns': c['ns'],
             'timestamp': parse_time(c['timestamp'], cst=True),
             'new': 'new' in c,
-            'comment': c['comment']
+            'comment': c['comment'],
+            'revid': c['revid']
         }
         for c in site.usercontribs(user=username, total=500)]
     return [c for c in contributions if c['timestamp'] > time_start]

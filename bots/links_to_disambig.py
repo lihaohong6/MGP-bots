@@ -7,6 +7,7 @@ from pywikibot.pagegenerators import GeneratorFactory
 from pywikibot.tools.itertools import itergroup
 
 from utils.sites import mgp
+from utils.utils import adjust_trailing_newline
 
 site: APISite = mgp()
 
@@ -150,7 +151,7 @@ def run_links_to_disambig():
     for page_name, pages in categories.items():
         print("Processing " + page_name)
         page = Page(source=site, title=target_page + "/" + page_name)
-        page.text = create_wiki_table(pages)
+        page.text = adjust_trailing_newline(create_wiki_table(pages), 2) + "[[Category:萌娘百科数据报告]]"
         page.save(summary="更新列表", botflag=True, tags="Bot")
 
 
