@@ -36,8 +36,8 @@ def topological_sort(graph: Graph):
                 result.append(node)
         remaining.difference_update(remove)
         if len(remove) == 0:
-            print("Topological sort failed: loop detected.", file=sys.stderr)
-            result.extend(list(remaining))
+            pywikibot.warn("Topological sort failed: loop detected.")
+            result = list(graph.keys())
             break
     return result
 
