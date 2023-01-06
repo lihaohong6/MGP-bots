@@ -122,9 +122,13 @@ def list_contributions(target: str, preset: str, event_start: Optional[datetime]
     usernames = [u.username for u in users]
     last_update = get_last_update(usernames, event_start)
     contributions_page = Page(source=get_site(), title=target + "/计分板")
+    if not contributions_page.exists():
+        pywikibot.error("Contributions page named " + contributions_page.title() + " does not exist.")
+        return None
     parsed = wtp.parse(contributions_page.text)
     preset = get_preset(preset)
     for username in usernames:
+        pywikibot.info("Processing user " + username)
         contributions = get_user_contributions(username, last_update)
         target_section = get_user_section(username, parsed)
         apply_preset(preset, contributions, target_section)

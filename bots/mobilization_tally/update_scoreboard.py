@@ -2,6 +2,7 @@ import re
 import sys
 from typing import Dict, Set
 
+import pywikibot
 import wikitextparser as wtp
 from pywikibot import Page
 from wikitextparser import WikiText
@@ -64,6 +65,10 @@ def get_scoreboard_columns(parsed: WikiText):
 def update_scoreboard(target: str, **kwargs):
     contributions_page = Page(source=get_site(), title=target + "/计分板")
     scoreboard_page = Page(source=get_site(), title=target + "/排行榜")
+    for p in [contributions_page, scoreboard_page]:
+        if not p.exists():
+            pywikibot.error("Page titled " + p.title() + " does not exist. Double check your configs.")
+            return None
     parsed = wtp.parse(contributions_page.text)
     current_user = None
     # get scoreboard
