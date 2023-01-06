@@ -128,8 +128,9 @@ def vj_translate(contribution):
     page: Page = contribution['page']
     if '翻译歌词' not in contribution['comment']:
         return None
-    lyrics_kai = find_templates(wtp.parse(page.text).templates, "LyricsKai")
+    lyrics_kai = find_templates(wtp.parse(page.text).templates, "LyricsKai", loose=True)
     if len(lyrics_kai) != 1:
+        pywikibot.error(f"Looking for translation in {page.title()}, but T:LyricsKai is not found.")
         return None
     lyrics_kai = lyrics_kai[0]
     translation = lyrics_kai.get_arg("translated")
