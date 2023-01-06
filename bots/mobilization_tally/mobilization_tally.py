@@ -96,6 +96,7 @@ def get_user_contributions(username: str, last_update: Dict) -> list:
             'ns': c['ns'],
             'timestamp': parse_time(c['timestamp'], cst=True),
             'new': 'new' in c,
+            'minor': 'minor' in c,
             'comment': c['comment'],
             'revid': c['revid']
         }

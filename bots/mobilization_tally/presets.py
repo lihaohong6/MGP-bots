@@ -11,7 +11,7 @@ from utils.utils import find_templates, get_links_in_template
 def contribution_filter(c, new: bool = True, ns: int = 0):
     return (not new or
             c['new'] or
-            ('minor' in c and "移动页面" in c['comments'] and "[[User:" in c['comments'])) and \
+            (c['minor'] and "移动页面" in c['comment'] and "[[User:" in c['comment'])) and \
            c['ns'] == ns
 
 
