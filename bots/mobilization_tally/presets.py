@@ -4,8 +4,8 @@ import pywikibot
 import wikitextparser as wtp
 from pywikibot import Page
 
-from bots.mobilization_tally.utils import adjust, count_bytes_simple, count_bytes
-from utils.utils import find_templates
+from bots.mobilization_tally.utils import adjust, count_bytes_simple, count_bytes, get_site
+from utils.utils import find_templates, get_links_in_template
 
 
 def contribution_filter(c, new: bool = True, ns: int = 0):
@@ -40,8 +40,10 @@ def vj_create_producer_template(contribution):
     page: Page = contribution['page']
     cats = get_categories(page)
     if '虚拟歌手音乐人模板' in cats:
-        links_count = len(list(p for p in page.linkedPages() if p.namespace().id == 0))
-        score = links_count / 5
+        links = set(get_links_in_template(page))
+        links = [Page(source=get_site(), title=link) for link in links]
+        links_count = len(list(p for p in links if p.namespace().id == 0))
+        score = links_count / 10
         return page.title(as_link=True, allow_interwiki=False) + f"（+{score}）（{links_count}个链接）"
 
 
@@ -69,12 +71,19 @@ def vj_create_producer(contribution):
                f"（{simple_count}字节，调整后为{byte_count}字节）"
 
 
+def get_content(rev):
+    if '*' in rev:
+        return rev['*']
+    else:
+        return rev['slots']['main']['*']
+
+
 def expand_page_count_bytes(page: Page, revid: int):
     revisions = page.revisions(content=True)
     for rev in revisions:
         if rev['revid'] == revid:
-            cur_content = rev['slots']['main']['*']
-            prev_content = next(revisions)['slots']['main']['*']
+            cur_content = get_content(rev)
+            prev_content = get_content(next(revisions))
             break
     else:
         pywikibot.error("No revision with the desired revid found.")
