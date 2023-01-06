@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Callable, List, Union, Optional
 
+import pywikibot
 import wikitextparser as wtp
 from pywikibot import Page, User
 from wikitextparser import Section, WikiText
@@ -19,14 +20,13 @@ from utils.utils import adjust_trailing_newline, parse_time, CST
 
 
 def add_results(results: List[str], section: Section):
-    links = set(link.title for link in section.wikilinks)
+    existing_lines = {line.strip().lstrip('*#') for line in str(section).split("\n")}
     section.contents = adjust_trailing_newline(section.contents, 1)
     for result in results:
-        parsed = wtp.parse(result)
-        title = parsed.wikilinks[0].title
-        if title in links:
+        if result in existing_lines:
+            pywikibot.info("Skipping " + result)
             continue
-        links.add(title)
+        existing_lines.add(result)
         section.contents += "#" + result + "\n"
 
 
@@ -90,7 +90,6 @@ def get_last_update(usernames: List[str], event_start: Optional[datetime]) -> Di
 def get_user_contributions(username: str, last_update: Dict) -> list:
     site = get_site()
     time_start = last_update[username]
-    last_update[username] = datetime.now(tz=CST)
     contributions = [
         {
             'page': Page(source=site, title=c['title']),
@@ -101,6 +100,7 @@ def get_user_contributions(username: str, last_update: Dict) -> list:
             'revid': c['revid']
         }
         for c in site.usercontribs(user=username, total=500)]
+    last_update[username] = datetime.now(tz=CST)
     return [c for c in contributions if c['timestamp'] > time_start]
 
 
@@ -129,7 +129,7 @@ def list_contributions(target: str, preset: str, event_start: Optional[datetime]
         target_section = get_user_section(username, parsed)
         apply_preset(preset, contributions, target_section)
     contributions_page.text = str(parsed)
-    contributions_page.save(summary="更新计分板（试运行）", minor=True)
+    contributions_page.save(summary="更新计分板", minor=True)
     with open(USER_CONTRIBUTION_UPDATE_FILE, "wb") as f:
         pickle.dump(last_update, f)
 

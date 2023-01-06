@@ -123,4 +123,4 @@ def update_scoreboard(target: str, **kwargs):
         return
     target.contents = "\n" + "\n".join(table)
     scoreboard_page.text = str(parsed)
-    scoreboard_page.save(summary="更新排行榜（试运行）", minor=True, tags="Bot")
+    scoreboard_page.save(summary="更新排行榜", minor=True, tags="Bot")

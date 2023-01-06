@@ -10,7 +10,7 @@ from utils.utils import find_templates
 
 def contribution_filter(c, new: bool = True, ns: int = 0):
     return (not new or
-            'new' in c or
+            c['new'] or
             ('minor' in c and "移动页面" in c['comments'] and "[[User:" in c['comments'])) and \
            c['ns'] == ns
 
@@ -73,8 +73,8 @@ def expand_page_count_bytes(page: Page, revid: int):
     revisions = page.revisions(content=True)
     for rev in revisions:
         if rev['revid'] == revid:
-            cur_content = rev['*']
-            prev_content = next(revisions)['*']
+            cur_content = rev['slots']['main']['*']
+            prev_content = next(revisions)['slots']['main']['*']
             break
     else:
         pywikibot.error("No revision with the desired revid found.")
@@ -91,11 +91,15 @@ def vj_expand_article(contribution):
         return None
     page: Page = contribution['page']
     cats = get_categories(page)
-    if len(list(article_cats.intersection(cats))) > 0:
+    if len(list(article_cats.intersection(cats))) > 0 and '内容扩充' in contribution['comment']:
         res = expand_page_count_bytes(page, contribution['revid'])
         if res is None:
             return None
         byte_diff, raw_byte_diff = res
+        if raw_byte_diff < 500:
+            pywikibot.info(f"Edit with revid {contribution['revid']} on {page.title()} has {raw_byte_diff} bytes, "
+                           f"lower than the thrshold. ")
+            return None
         point = adjust(byte_diff / 200)
         return page.title(as_link=True, allow_interwiki=False) + \
                f"（+{point}）（增加{raw_byte_diff}字节，换算为{byte_diff}有效字节）"
@@ -143,7 +147,8 @@ __presets = {
         '歌词注音': vj_furigana,
         '创建周刊': vj_vocaran,
         '创建大家族模板': vj_create_producer_template,
-        '创建P主': vj_create_producer,
+        '创建P主/歌姬/引擎': vj_create_producer,
+        '内容扩充': vj_expand_article
     }
 }
 
