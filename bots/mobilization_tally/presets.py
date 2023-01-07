@@ -31,7 +31,7 @@ def vj_create_song(contribution):
         return None
     if '中国音乐作品' in categories:
         return None
-    return page.title(as_link=True, allow_interwiki=False) + "（+1）"
+    return page.title(as_link=True, allow_interwiki=False) + "（+1.5）"
 
 
 def vj_create_producer_template(contribution):
@@ -146,7 +146,7 @@ def vj_vocaran(contribution):
     page: Page = contribution['page']
     cats = get_categories(page)
     if '周刊VOCAL Character & UTAU排行榜' in cats:
-        return page.title(as_link=True, allow_interwiki=False) + "（+25）"
+        return page.title(as_link=True, allow_interwiki=False) + "（+20）"
 
 
 Preset = Dict[str, Callable[[Dict], Optional[str]]]
