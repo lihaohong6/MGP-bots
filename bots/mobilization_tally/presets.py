@@ -126,7 +126,7 @@ def vj_translate(contribution):
     if not contribution_filter(contribution, new=False):
         return None
     page: Page = contribution['page']
-    if '翻译歌词' not in contribution['comment'] or '歌词翻译' not in contribution['comment']:
+    if '翻译歌词' not in contribution['comment'] and '歌词翻译' not in contribution['comment']:
         return None
     lyrics_kai_all = find_templates(wtp.parse(page.text).templates, "LyricsKai", loose=True)
     if len(lyrics_kai_all) == 0:
