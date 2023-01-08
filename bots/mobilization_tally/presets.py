@@ -126,18 +126,21 @@ def vj_translate(contribution):
     if not contribution_filter(contribution, new=False):
         return None
     page: Page = contribution['page']
-    if '翻译歌词' not in contribution['comment']:
+    if '翻译歌词' not in contribution['comment'] or '歌词翻译' not in contribution['comment']:
         return None
-    lyrics_kai = find_templates(wtp.parse(page.text).templates, "LyricsKai", loose=True)
-    if len(lyrics_kai) != 1:
+    lyrics_kai_all = find_templates(wtp.parse(page.text).templates, "LyricsKai", loose=True)
+    if len(lyrics_kai_all) == 0:
         pywikibot.error(f"Looking for translation in {page.title()}, but T:LyricsKai is not found.")
         return None
-    lyrics_kai = lyrics_kai[0]
-    translation = lyrics_kai.get_arg("translated")
-    if translation is None:
-        return None
-    byte_count = count_bytes_simple(translation.value)
-    return page.title(as_link=True, allow_interwiki=False) + f"（+{adjust(byte_count / 150)}）（{byte_count}字节）"
+    results = []
+    for lyrics_kai in lyrics_kai_all:
+        translation = lyrics_kai.get_arg("translated")
+        if translation is None:
+            continue
+        byte_count = count_bytes_simple(translation.value)
+        results.append(f"（+{adjust(byte_count / 150)}）（{byte_count}字节）")
+    if len(results) > 0:
+        return page.title(as_link=True, allow_interwiki=False) + "".join(results)
 
 
 def vj_vocaran(contribution):
