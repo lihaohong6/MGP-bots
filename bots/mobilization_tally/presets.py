@@ -19,17 +19,19 @@ def get_categories(page: Page):
     return set(c.title(with_ns=False) for c in page.categories())
 
 
-def vj_create_song(contribution):
-    if not contribution_filter(contribution):
-        return None
-    page: Page = contribution['page']
+def is_vj_song(page: Page):
     categories = get_categories(page)
     engines = {'使用VOCALOID的歌曲', '使用UTAU的歌曲', '使用CeVIO的歌曲', '使用初音未来 NT的歌曲', '使用DeepVocal的歌曲', '使用MAIDLOID的歌曲',
                '使用MUTA的歌曲', '使用NEUTRINO的歌曲', '使用袅袅虚拟歌手的歌曲', '使用Sharpkey的歌曲', '使用Synthesizer V的歌曲', '使用VOICEROID的歌曲',
                '使用VOICEVOX的歌曲', '使用VocalSharp的歌曲', '使用X Studio的歌曲', '使用的歌曲'}
-    if len(categories.intersection(engines)) == 0:
+    return len(categories.intersection(engines)) > 0 and '中国音乐作品' not in categories
+
+
+def vj_create_song(contribution):
+    if not contribution_filter(contribution):
         return None
-    if '中国音乐作品' in categories:
+    page: Page = contribution['page']
+    if not is_vj_song(page):
         return None
     return page.title(as_link=True, allow_interwiki=False) + "（+1.5）"
 
@@ -118,7 +120,7 @@ def vj_furigana(contribution):
     if not contribution_filter(contribution, new=False):
         return None
     page: Page = contribution['page']
-    if '歌词注音' in contribution['comment']:
+    if '歌词注音' in contribution['comment'] and is_vj_song(page):
         return page.title(as_link=True, allow_interwiki=False) + "（+0.2）"
 
 
@@ -126,7 +128,16 @@ def vj_translate(contribution):
     if not contribution_filter(contribution, new=False):
         return None
     page: Page = contribution['page']
-    if '翻译歌词' not in contribution['comment'] and '歌词翻译' not in contribution['comment']:
+    translation_keywords = {
+        '歌詞翻譯',
+        '翻譯歌詞',
+        '翻译歌词',
+        '歌词翻译'
+    }
+    for keyword in translation_keywords:
+        if keyword in contribution['comment']:
+            break
+    else:
         return None
     lyrics_kai_all = find_templates(wtp.parse(page.text).templates, "LyricsKai", loose=True)
     if len(lyrics_kai_all) == 0:
