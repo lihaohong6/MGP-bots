@@ -9,6 +9,7 @@ from pywikibot import Page
 
 from bots.boilerplate import run_boilerplate_bot
 from bots.commons_image import commons_image
+from bots.disambiguator import run_disambiguator
 from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.links_to_disambig import links_to_disambig
@@ -45,6 +46,7 @@ bots: Dict[str, Callable] = {
     "links_to_disambig": links_to_disambig,
     "template_splitter": run_template_splitter,
     'mobilization_tally': run_mobilization_tally,
+    "disambiguate": run_disambiguator,
     "test": test
 }
 

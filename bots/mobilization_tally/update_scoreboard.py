@@ -1,6 +1,6 @@
 import re
 import sys
-from typing import Dict, Set
+from typing import Dict, Set, Optional
 
 import pywikibot
 import wikitextparser as wtp
@@ -10,8 +10,10 @@ from wikitextparser import WikiText
 from bots.mobilization_tally.utils import adjust, get_site
 
 
-def parse_section_title_username(title: str) -> str:
+def parse_section_title_username(title: str) -> Optional[str]:
     parsed = wtp.parse(title)
+    if len(parsed.wikilinks) == 0:
+        return None
     username = parsed.wikilinks[0].text
     return username
 
@@ -77,8 +79,11 @@ def update_scoreboard(target: str, **kwargs):
     for section in parsed.sections:
         if section.level == USERNAME_SECTION_LEVEL:
             current_user = parse_section_title_username(section.title.strip())
-            scoreboard[current_user] = dict((column, 0) for column in scoreboard_columns)
+            if current_user is not None:
+                scoreboard[current_user] = dict((column, 0) for column in scoreboard_columns)
         elif section.level == SCORE_SECTION_LEVEL:
+            if current_user is None:
+                continue
             lines = str(section).splitlines()
             for line in lines:
                 score = re.search(r"[(（]\+([0-9.]+)[)）]", line)

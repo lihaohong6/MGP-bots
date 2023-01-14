@@ -2,31 +2,21 @@ import argparse
 import itertools
 import re
 import sys
-from typing import Any, Optional
+from typing import Optional
 
 from pywikibot import Page, FilePage
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 
 from utils.sites import mgp, cm
-
-
-def generate_possible_filenames(filename: str):
-    cur = [""]
-    for c in filename:
-        next_list = [s + c for s in cur]
-        if c == " " or c == "_":
-            other = "_" if c == ' ' else " "
-            next_list += [s + other for s in cur]
-        cur = next_list
-    return cur
+from utils.utils import generate_possible_titles
 
 
 class MoveImageBot(SingleSiteBot):
 
     def __init__(self, image_from: str, image_to: str, summary: Optional[str] = None):
         gen = GeneratorFactory(site=mgp())
-        for filename in generate_possible_filenames(image_from):
+        for filename in generate_possible_titles(image_from):
             gen.handle_arg(f'-search:insource:"{filename}"')
         gen1 = gen.getCombinedGenerator(preload=True)
         gen2 = PreloadingGenerator(Page(source=mgp(), title=p.title())

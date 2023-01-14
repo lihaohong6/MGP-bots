@@ -38,7 +38,8 @@ def find_templates(templates: List[Template], *names, loose: bool = False) -> Li
         if ':' in template_name and re.search("[Tt](emplate)?:", template_name) is not None:
             template_name = template_name.split(":")[1]
         for target in names:
-            if str_equal(template_name, target) or (loose and str_contains(target, template_name)):
+            if str_equal(template_name, target) or \
+                    (loose and (str_contains(target, template_name) or str_contains(template_name, target))):
                 result.append(t)
                 break
     return result
@@ -222,3 +223,14 @@ def parse_time(timestamp: str, cst: bool = False) -> datetime:
     if cst:
         parsed = parsed.astimezone(CST)
     return parsed
+
+
+def generate_possible_titles(filename: str) -> List[str]:
+    cur = [""]
+    for c in filename:
+        next_list = [s + c for s in cur]
+        if c == " " or c == "_":
+            other = "_" if c == ' ' else " "
+            next_list += [s + other for s in cur]
+        cur = next_list
+    return cur
