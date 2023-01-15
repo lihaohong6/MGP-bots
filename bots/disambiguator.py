@@ -1,3 +1,4 @@
+import re
 import sys
 from typing import List, Any, Set, Optional, Tuple
 
@@ -86,18 +87,41 @@ class DisambiguateBot(SingleSiteBot):
 #         setattr(page, "_text", text)
 
 
-def disambiguate(page_name: str):
-    page = Page(source=site, title=page_name)
-    redirects = [page_name] + [p.title() for p in page.redirects(namespaces=0)]
-    print("Treating " + str(redirects))
+def filter_choices(choices: List[str]) -> List[str]:
+    gen = PreloadingGenerator(Page(source=site, title=c) for c in choices)
+    result = []
+    for p in gen:
+        if p.text.strip() != "" and p.text[0] == '#' and p.isRedirectPage():
+            p = p.getRedirectTarget()
+        result.append(p.title())
+    return result
+
+
+def get_disambiguation_choices(text: str) -> List[str]:
     choices = []
-    for line in page.text.split("\n"):
+    for line in text.split("\n"):
+        if "——" in line:
+            parts = re.split(r"]].*—+", line)
+            if len(parts) < 2:
+                continue
+            line = parts[0] + "]]"
         parsed = parse(line)
         links = parsed.wikilinks
         if len(links) == 0:
             continue
-        choices.append(links[0].title)
-    print("\n".join(f"{i}: {c}" for i, c in enumerate(choices)))
+        if Page(source=site, title=links[0].title).namespace().id != 0:
+            continue
+        choices.append(links[0].title.strip())
+    choices = filter_choices(choices)
+    return choices
+
+
+def disambiguate(page_name: str):
+    page = Page(source=site, title=page_name)
+    redirects = [page_name] + [p.title() for p in page.redirects(namespaces=0)]
+    print("Treating " + str(redirects))
+    choices = get_disambiguation_choices(page.text)
+    print("\n".join(f"{i + 1}: {c}" for i, c in enumerate(choices)))
     backlinks = list(page.backlinks(namespaces=0))
     print(f"Treating {len(backlinks)} pages.")
     bot = DisambiguateBot(site=site,
