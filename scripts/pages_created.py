@@ -1,4 +1,5 @@
 import pickle
+import sys
 from pathlib import Path
 
 import init_script
@@ -30,6 +31,6 @@ def get_all_pages():
 all_pages = set(get_all_pages())
 
 pages_created = [c['title']
-                 for c in site.usercontribs(user="Lihaohong", namespaces=0)
+                 for c in site.usercontribs(user=sys.argv[1], namespaces=0)
                  if 'new' in c and c['title'] in all_pages]
-print("\n".join(p for p in pages_created))
+print("\n".join(reversed([p for p in pages_created])))
