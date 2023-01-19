@@ -20,6 +20,13 @@ class TestIsbn(TestCase):
 |-""",
                          treat_isbn(text))
 
+    def test_isbn_comments(self):
+        text = "<!-- || ISBN978-4-7981-4287-494-->"
+        self.assertEqual(
+            '<!-- || {{ISBN|978-4-7981-4287-494}}-->',
+            treat_isbn(text))
+
+
     def test_keep_isbn(self):
         texts = ["joijoifwjoiew", "ISBN", "ISBN 123啊", "|image=ISBN978-7-5581-8236-5.jpg",
                  "[[Special:网络书源/978-7-5366-9396-8|ISBN 978-7-5366-9396-8]]",

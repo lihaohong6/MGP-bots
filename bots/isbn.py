@@ -32,7 +32,7 @@ def sub_isbn(text: str, blacklist: Set[str]) -> str:
             extra2 = "|" + isbn
         return extra1 + "{{ISBN|" + isbn + extra2 + "}}" + m.group(2)
 
-    return re.sub(r"(?<![/.])ISBN[ :：]?([\d-]{10,20}[xX]?)(.*)",
+    return re.sub(r"(?<![/.])ISBN[ :：]?([\d-]{10,20}[xX]?)(?<!-)(.*)",
                   replace,
                   text,
                   re.IGNORECASE)
