@@ -30,7 +30,7 @@ def get_white_list():
 class RCDownloadBot(RecentChangesBot):
     def __init__(self):
         super().__init__("mirror_sync",
-                         ns=[0, 'Template', '萌娘百科', 'Module', 'Help', 'Category'],
+                         ns=[0, 'Template', '萌娘百科', 'Module', 'Help', 'Category', 'Widget'],
                          delay=0)
         self.white_list = get_white_list()
 
