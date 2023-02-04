@@ -105,8 +105,8 @@ RESULT_PATH = get_data_path().joinpath("vj.pickle")
 
 
 def run_barn_star():
-    p = Page(source=use_site, title="U:Lihaohong/Sandbox2")
-    titles = set(re.findall(r"^\*\[\[([^]]+)]]", p.text, re.MULTILINE))
+    p = Page(source=use_site, title="U:Lihaohong/Sandbox4")
+    titles = set(re.findall(r"^[#*]\[\[([^]]+)]]", p.text, re.MULTILINE))
     pages = (Page(source=use_site, title=t) for t in titles)
     write_contributions_to_file(pages, RESULT_PATH)
 

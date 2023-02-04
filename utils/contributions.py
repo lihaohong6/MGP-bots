@@ -53,6 +53,7 @@ def process_page(contributions, page: Page):
             CONTRIBUTIONS_LOCK.release()
             prev_bytes = byte_count
     except NoPageError:
+        pywikibot.error(page.title() + " does not exist.")
         return
 
 
@@ -81,6 +82,7 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_cou
     threads: List[Thread] = []
     for index, page in enumerate(filtered):
         if page.title() in completed:
+            pywikibot.output("Skipping " + page.title() + " since it is already done.")
             continue
         while len(threads) >= thread_count:
             sleep(0.1)
