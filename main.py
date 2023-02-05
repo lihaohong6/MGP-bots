@@ -17,6 +17,7 @@ from bots.deprecated.mass_cat import mass_cat
 from bots.mirror_sync import mirror_sync
 from bots.mobilization_tally.mobilization_tally import run_mobilization_tally
 from bots.move_image import move_image
+from bots.rank_contributors import rank_contributors
 from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
 from bots.commons_cat import commons_cat
@@ -47,6 +48,7 @@ bots: Dict[str, Callable] = {
     "template_splitter": run_template_splitter,
     'mobilization_tally': run_mobilization_tally,
     "disambiguate": run_disambiguator,
+    'rank_contributors': rank_contributors,
     "test": test
 }
 

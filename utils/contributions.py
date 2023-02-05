@@ -79,15 +79,16 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_cou
     filtered = list(filter(lambda p: p.title() not in completed, pages))
     pywikibot.output(f"{len(filtered)} pages after filtering completed ones.")
     pywikibot.output(f"Processing contributions with {thread_count} threads.")
-    threads: List[Thread] = []
+    # threads: List[Thread] = []
     for index, page in enumerate(filtered):
         if page.title() in completed:
             pywikibot.output("Skipping " + page.title() + " since it is already done.")
             continue
-        while len(threads) >= thread_count:
-            sleep(0.1)
-            threads = [t for t in threads if t.is_alive()]
-        threads.append(Thread(target=lambda: process_page(contributions, page)))
+        # while len(threads) >= thread_count:
+        #     sleep(0.1)
+        #     threads = [t for t in threads if t.is_alive()]
+        # threads.append(Thread(target=lambda: process_page(contributions, page)))
+        process_page(contributions, page)
         pywikibot.output(f"{index}/{len(filtered)} ")
         # reduce disk io since toolforge machines are slow
         if index % 20 == 0:

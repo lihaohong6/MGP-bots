@@ -1,10 +1,6 @@
-import os
-import sys
-
-sys.path.append(os.getcwd())
 import pickle
-import re
-from typing import Dict
+import sys
+from typing import Dict, Callable
 
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
@@ -101,14 +97,19 @@ def print_vj_list():
     pass
 
 
-RESULT_PATH = get_data_path().joinpath("vj.pickle")
+RESULT_PATH = get_data_path().joinpath("rank_contributors_info.pickle")
 
 
 def run_barn_star():
-    p = Page(source=use_site, title="U:Lihaohong/Sandbox4")
-    titles = set(re.findall(r"^[#*]\[\[([^]]+)]]", p.text, re.MULTILINE))
-    pages = (Page(source=use_site, title=t) for t in titles)
-    write_contributions_to_file(pages, RESULT_PATH)
+    # p = Page(source=use_site, title="U:Lihaohong/Sandbox4")
+    # titles = set(re.findall(r"^[#*]\[\[([^]]+)]]", p.text, re.MULTILINE))
+    # pages = (Page(source=use_site, title=t) for t in titles)
+    args = sys.argv[3:]
+    print("Using the following arguments in generator " + " ".join(args))
+    gen = GeneratorFactory(site=use_site)
+    gen.handle_args(args)
+    write_contributions_to_file(gen.getCombinedGenerator(), RESULT_PATH)
+    print_result()
 
 
 def print_result():
@@ -116,25 +117,38 @@ def print_result():
     usernames = sorted(result.keys(), key=lambda k: result[k].edit_count, reverse=True)
     output = """{| class="wikitable sortable"
 |-
-! 用户名 !! 编辑次数 !! 字节数 !! 编辑过的条目（最多显示10个）
+! 用户名 !! 编辑次数 !! 字节数 !! 编辑过的条目（最多显示5个）
 """
     lines = []
     for u in usernames:
         info = result[u]
-        pages_edited = "、".join(list(info.pages_edited)[:])
+        pages_edited = "、".join(list(info.pages_edited)[:5])
         lines.append(f"|-\n| -{{{u}}}- || {info.edit_count} || {info.byte_count} || {pages_edited}")
     output += "\n".join(lines)
     output += "\n|}"
     print(output)
 
 
-def main():
-    # print_vj_list()
-    if sys.argv[1] == 'run':
-        run_barn_star()
-    elif sys.argv[1] == 'print':
-        print_result()
+def reset():
+    RESULT_PATH.unlink(missing_ok=True)
+
+
+def rank_contributors():
+    dispatcher: Dict[str, Callable] = {
+        'run': run_barn_star,
+        'print': print_result,
+        'reset': reset
+    }
+    if len(sys.argv) <= 2:
+        print("Too few arguments.")
+        return
+    cmd = sys.argv[2]
+    if cmd in dispatcher:
+        dispatcher[sys.argv[2]]()
+    else:
+        print("Invalid command.")
+        print(", ".join(dispatcher.keys()))
 
 
 if __name__ == '__main__':
-    main()
+    rank_contributors()

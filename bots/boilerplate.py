@@ -21,7 +21,6 @@ AUTO_PATH = BOILERPLATE_PATH.joinpath("auto.pickle")
 if AUTO_PATH.exists():
     black_list = set(pickle.load(open(AUTO_PATH, "rb")))
 else:
-    pywikibot.warning("Black list does not exist! Please download first.")
     black_list = set()
 
 
@@ -139,5 +138,7 @@ def run_boilerplate_bot():
     if len(keywords) == 0:
         pywikibot.output("No search keyword provided.")
         return
+    if len(black_list) == 0:
+        pywikibot.warning("Black list does not exist! Please download first.")
     bot = BoilerplateBot(generator=search_pages(*keywords, preload=True))
     bot.run()
