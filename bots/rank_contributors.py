@@ -2,9 +2,11 @@ import pickle
 import sys
 from typing import Dict, Callable
 
+import pywikibot
 from pywikibot import Page
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 
+from utils.time_utils import cst
 from utils.config import get_data_path
 from utils.contributions import write_contributions_to_file, ContributionInfo
 from utils.sites import mgp
@@ -105,6 +107,9 @@ def run_barn_star():
     # titles = set(re.findall(r"^[#*]\[\[([^]]+)]]", p.text, re.MULTILINE))
     # pages = (Page(source=use_site, title=t) for t in titles)
     args = sys.argv[3:]
+    if len(args) == 0:
+        pywikibot.error("No generator specified.")
+        return
     print("Using the following arguments in generator " + " ".join(args))
     gen = GeneratorFactory(site=use_site)
     gen.handle_args(args)
@@ -117,13 +122,25 @@ def print_result():
     usernames = sorted(result.keys(), key=lambda k: result[k].edit_count, reverse=True)
     output = """{| class="wikitable sortable"
 |-
-! 用户名 !! 编辑次数 !! 字节数 !! 编辑过的条目（最多显示5个）
+! 用户名 !! 编辑次数 !! 增加字节数 !! 删除字节数 !! 最后一次编辑 !! 最后一次编辑的条目
 """
     lines = []
-    for u in usernames:
-        info = result[u]
+    known_bots = {
+        "AnnAngela-abot", "AnnAngela-bbot", "AnnAngela-bot", "AnnAngela-cbot", "AnnAngela-dbot", "Bhsd-bot",
+        "C8H17OH-bot", "Delete page script", "Eizenchan", "LihaohongBot", "SinonJZH-bot", "UNC HA Bot", "XzonnBot",
+        "星海-adminbot", "星海-interfacebot", "星海-oversightbot", "机娘史蒂夫", "机娘星海酱", "机娘鬼影233号", "滥用过滤器",
+        "萌百娘", "重定向修复器",
+
+        "Swampland Robot", "Funce"
+    }
+    for bot in known_bots:
+        if bot in usernames:
+            usernames.remove(bot)
+    for username in usernames:
+        info = result[username]
         pages_edited = "、".join(list(info.pages_edited)[:5])
-        lines.append(f"|-\n| -{{{u}}}- || {info.edit_count} || {info.byte_count} || {pages_edited}")
+        lines.append(f"|-\n| -{{{username}}}- || {info.edit_count} || {info.bytes_added} || {info.bytes_deleted} || "
+                     f"{info.last_edit_date.astimezone(cst).strftime('%y-%m-%d %H:%M')} || {info.last_edit_page}")
     output += "\n".join(lines)
     output += "\n|}"
     print(output)

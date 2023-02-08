@@ -1,13 +1,11 @@
-from datetime import timedelta, datetime, date, timezone
+from datetime import timedelta, timezone
 
 from pywikibot import Timestamp
 
-import init_script
-from utils.sites import mgp, mirror
+from utils.sites import mgp
 from utils.utils import parse_time
 
 site = mgp()
-cst = timezone(timedelta(hours=8), 'CST')
 now = Timestamp.now().astimezone(timezone.utc)
 changes = site.recentchanges(end=now + timedelta(hours=-24), start=now, bot=False)
 changes = list(changes)
