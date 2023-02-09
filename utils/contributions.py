@@ -57,6 +57,7 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
             byte_count = revision['size']
             date = revision['timestamp']
             byte_diff = byte_count - prev_bytes
+            prev_bytes = byte_count
             if start_date > date:
                 continue
             # not atomic; use a lock in case of a race condition
@@ -66,7 +67,6 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
                                                    byte_diff,
                                                    page.title())
             CONTRIBUTIONS_LOCK.release()
-            prev_bytes = byte_count
     except NoPageError:
         pywikibot.error(page.title() + " does not exist.")
         return
