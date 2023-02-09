@@ -56,9 +56,9 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
             user = revision['user']
             byte_count = revision['size']
             date = revision['timestamp']
+            byte_diff = byte_count - prev_bytes
             if start_date > date:
                 continue
-            byte_diff = byte_count - prev_bytes
             # not atomic; use a lock in case of a race condition
             CONTRIBUTIONS_LOCK.acquire()
             contributions[user] = process_revision(contributions.get(user, ContributionInfo()),
