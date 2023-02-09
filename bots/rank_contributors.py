@@ -1,5 +1,6 @@
 import pickle
 import sys
+from argparse import ArgumentParser
 from typing import Dict, Callable
 
 import pywikibot
@@ -107,13 +108,20 @@ def run_barn_star():
     # titles = set(re.findall(r"^[#*]\[\[([^]]+)]]", p.text, re.MULTILINE))
     # pages = (Page(source=use_site, title=t) for t in titles)
     args = sys.argv[3:]
-    if len(args) == 0:
+    parser = ArgumentParser()
+    parser.add_argument("-d", "--days", dest="days", type=int, default=None,
+                        help="Only count edits from this many days ago until now.")
+    parser.add_argument("-t", "--threads", dest="threads", type=int, default=1,
+                        help="Number of threads to use. Set to more than 1 under no WAF environments.")
+    args, generator_args = parser.parse_known_args(args)
+    if len(generator_args) == 0:
         pywikibot.error("No generator specified.")
         return
-    print("Using the following arguments in generator " + " ".join(args))
+    print("Using the following arguments in generator " + " ".join(generator_args))
     gen = GeneratorFactory(site=use_site)
-    gen.handle_args(args)
-    write_contributions_to_file(gen.getCombinedGenerator(), RESULT_PATH)
+    gen.handle_args(generator_args)
+    write_contributions_to_file(gen.getCombinedGenerator(), RESULT_PATH,
+                                thread_count=args.threads, days_before=args.days)
     print_result()
 
 

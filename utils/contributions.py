@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Lock, Thread
 from time import sleep
-from typing import Tuple, List, Iterable, Dict, Set
+from typing import Tuple, List, Iterable, Dict, Set, Optional
 
 import pywikibot
 from pywikibot import Page
@@ -29,7 +29,7 @@ class ContributionInfo:
 
 def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_name: str) -> ContributionInfo:
     tags = revision['tags']
-    if "mw-undo" in tags:
+    if "mw-undo" in tags or 'mw-rollback' in tags:
         byte_diff = 0
     edit_date = old_info.last_edit_date
     edit_page = old_info.last_edit_page
@@ -48,13 +48,16 @@ def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_
 CONTRIBUTIONS_LOCK = Lock()
 
 
-def process_page(contributions, page: Page):
+def process_page(contributions, page: Page, start_date: Optional[datetime]):
     try:
         revisions: List[Revision] = list(page.revisions(reverse=True))
         prev_bytes = 0
         for revision in revisions:
             user = revision['user']
             byte_count = revision['size']
+            date = revision['timestamp']
+            if start_date > date:
+                continue
             byte_diff = byte_count - prev_bytes
             # not atomic; use a lock in case of a race condition
             CONTRIBUTIONS_LOCK.acquire()
@@ -78,7 +81,8 @@ def save_contributions(contributions: dict, file_path: Path):
         CONTRIBUTIONS_LOCK.release()
 
 
-def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_count: int = 1):
+def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_count: int = 1,
+                                days_before: int = None):
     pages = list(gen)
     completed = set()
     if not temp_file.exists():
@@ -92,6 +96,10 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_cou
     pywikibot.output(f"{len(filtered)} pages after filtering completed ones.")
     pywikibot.output(f"Processing contributions with {thread_count} threads.")
     threads: List[Thread] = []
+    if days_before is not None:
+        start_date = datetime.now() + timedelta(days=-days_before)
+    else:
+        start_date = None
     for index, page in enumerate(filtered):
         if page.title() in completed:
             pywikibot.output("Skipping " + page.title() + " since it is already done.")
@@ -99,7 +107,7 @@ def write_contributions_to_file(gen: Iterable[Page], temp_file: Path, thread_cou
         while len(threads) >= thread_count:
             threads = [t for t in threads if t.is_alive()]
             sleep(0.1)
-        t = Thread(target=lambda: process_page(contributions, page))
+        t = Thread(target=lambda: process_page(contributions, page, start_date))
         threads.append(t)
         t.start()
         pywikibot.output(f"{index}/{len(filtered)} ")
