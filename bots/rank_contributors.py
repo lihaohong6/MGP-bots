@@ -146,7 +146,6 @@ def print_result():
             usernames.remove(bot)
     for username in usernames:
         info = result[username]
-        pages_edited = "、".join(list(info.pages_edited)[:5])
         lines.append(f"|-\n| -{{{username}}}- || {info.edit_count} || {info.bytes_added} || {info.bytes_deleted} || "
                      f"{info.last_edit_date.astimezone(cst).strftime('%y-%m-%d %H:%M')} || {info.last_edit_page}")
     output += "\n".join(lines)

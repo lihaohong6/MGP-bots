@@ -56,22 +56,21 @@ CONTRIBUTIONS_LOCK = Lock()
 def process_page(contributions, page: Page, start_date: Optional[datetime]):
     try:
         revisions: List[Revision] = list(page.revisions(reverse=True))
-        prev_bytes = 0
-        for revision in revisions:
-            user = revision['user']
-            byte_count = revision['size']
-            date = revision['timestamp']
-            byte_diff = byte_count - prev_bytes
-            prev_bytes = byte_count
-            if start_date is not None and start_date > date:
-                continue
-            # not atomic; use a lock in case of a race condition
-            CONTRIBUTIONS_LOCK.acquire()
-            contributions[user] = process_revision(contributions.get(user, ContributionInfo()),
-                                                   revision,
-                                                   byte_diff,
-                                                   page.title())
-            CONTRIBUTIONS_LOCK.release()
+        # process all revisions with lock acquire to reduce lock overhead
+        with CONTRIBUTIONS_LOCK:
+            prev_bytes = 0
+            for revision in revisions:
+                user = revision['user']
+                byte_count = revision['size']
+                date = revision['timestamp']
+                byte_diff = byte_count - prev_bytes
+                prev_bytes = byte_count
+                if start_date is not None and start_date > date:
+                    continue
+                contributions[user] = process_revision(contributions.get(user, ContributionInfo()),
+                                                       revision,
+                                                       byte_diff,
+                                                       page.title())
     except NoPageError:
         pywikibot.error(page.title() + " does not exist.")
         return
@@ -81,9 +80,8 @@ def save_contributions(contributions: dict, file_path: Path):
     with open(file_path, "wb") as f:
         # theoretically contributions is never in an inconsistent state
         # but add a lock just in case
-        CONTRIBUTIONS_LOCK.acquire()
-        pickle.dump(contributions, f, protocol=pickle.HIGHEST_PROTOCOL)
-        CONTRIBUTIONS_LOCK.release()
+        with CONTRIBUTIONS_LOCK:
+            pickle.dump(contributions, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def get_contributions(gen: List[Page], save_path: Optional[Path] = None, thread_count: int = 1,
