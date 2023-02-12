@@ -24,6 +24,7 @@ class ContributionInfo:
     edit_count: int = 0
     bytes_added: int = 0
     bytes_deleted: int = 0
+    pages_created: int = 0
     last_edit_date: datetime = None
     last_edit_page: str = None
     pages_edited: Set[str] = field(default_factory=set)
@@ -32,21 +33,18 @@ class ContributionInfo:
 ContributionDict = Dict[str, ContributionInfo]
 
 
-def process_revision(old_info: ContributionInfo, revision, byte_diff: int, page_name: str) -> ContributionInfo:
+def process_revision(info: ContributionInfo, revision, byte_diff: int, page_name: str) -> ContributionInfo:
     tags = revision['tags']
     if "mw-undo" in tags or 'mw-rollback' in tags:
         byte_diff = 0
-    edit_date = old_info.last_edit_date
-    edit_page = old_info.last_edit_page
-    if edit_date is None or revision['timestamp'] > edit_date:
-        edit_date = revision['timestamp']
-        edit_page = page_name
-    return ContributionInfo(old_info.edit_count + 1,
-                            old_info.bytes_added + max(0, byte_diff),
-                            old_info.bytes_deleted - min(0, byte_diff),
-                            edit_date,
-                            edit_page,
-                            old_info.pages_edited.union({page_name}))
+    if info.last_edit_date is None or revision['timestamp'] > info.last_edit_date:
+        info.last_edit_date = revision['timestamp']
+        info.last_edit_page = page_name
+    info.edit_count += 1
+    info.bytes_added += max(0, byte_diff)
+    info.bytes_deleted -= min(0, byte_diff)
+    info.pages_edited.add(page_name)
+    return info
 
 
 # 什么年代了还在用传统锁
@@ -59,7 +57,7 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
         # process all revisions with lock acquire to reduce lock overhead
         with CONTRIBUTIONS_LOCK:
             prev_bytes = 0
-            for revision in revisions:
+            for index, revision in enumerate(revisions):
                 user = revision['user']
                 byte_count = revision['size']
                 date = revision['timestamp']
@@ -67,10 +65,14 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
                 prev_bytes = byte_count
                 if start_date is not None and start_date > date:
                     continue
-                contributions[user] = process_revision(contributions.get(user, ContributionInfo()),
-                                                       revision,
-                                                       byte_diff,
-                                                       page.title())
+                if index == 0:
+                    contributions[user].pages_created += 1
+                result = process_revision(contributions.get(user, ContributionInfo()),
+                                          revision,
+                                          byte_diff,
+                                          page.title())
+                if user not in contributions:
+                    contributions[user] = result
     except NoPageError:
         pywikibot.error(page.title() + " does not exist.")
         return
