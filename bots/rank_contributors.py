@@ -130,7 +130,7 @@ def print_result():
     usernames = sorted(result.keys(), key=lambda k: result[k].edit_count, reverse=True)
     output = """{| class="wikitable sortable"
 |-
-! 用户名 !! 编辑次数 !! 增加字节数 !! 删除字节数 !! 最后一次编辑 !! 最后一次编辑的条目
+! 用户名 !! 创建条目 !! 编辑次数 !! 增加字节数 !! 删除字节数 !! 最后一次编辑 !! 最后一次编辑的条目
 """
     lines = []
     known_bots = {
@@ -146,7 +146,7 @@ def print_result():
             usernames.remove(bot)
     for username in usernames:
         info = result[username]
-        lines.append(f"|-\n| -{{{username}}}- || {info.edit_count} || {info.bytes_added} || {info.bytes_deleted} || "
+        lines.append(f"|-\n| -{{{username}}}- || {info.pages_created} || {info.edit_count} || {info.bytes_added} || {info.bytes_deleted} || "
                      f"{info.last_edit_date.astimezone(cst).strftime('%y-%m-%d %H:%M')} || {info.last_edit_page}")
     output += "\n".join(lines)
     output += "\n|}"

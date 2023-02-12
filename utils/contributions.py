@@ -65,14 +65,14 @@ def process_page(contributions, page: Page, start_date: Optional[datetime]):
                 prev_bytes = byte_count
                 if start_date is not None and start_date > date:
                     continue
-                if index == 0:
-                    contributions[user].pages_created += 1
                 result = process_revision(contributions.get(user, ContributionInfo()),
                                           revision,
                                           byte_diff,
                                           page.title())
                 if user not in contributions:
                     contributions[user] = result
+                if index == 0:
+                    contributions[user].pages_created += 1
     except NoPageError:
         pywikibot.error(page.title() + " does not exist.")
         return
