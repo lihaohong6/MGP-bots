@@ -1,6 +1,7 @@
 import re
 import sys
 import webbrowser
+from argparse import ArgumentParser
 from typing import List, Any
 
 import pywikibot
@@ -9,13 +10,14 @@ from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import GeneratorFactory
 
-from utils.config import get_data_path
+from utils.config import get_data_path, get_default_save_params
 from utils.logger import get_logger
 from utils.utils import find_templates, count_trailing_newline, get_links_in_template, throttle, adjust_trailing_newline
 
 
 class TemplateAdderBot(SingleSiteBot):
-    def __init__(self, template_name: str, alias=None, **kwargs: Any):
+    def __init__(self, template_name: str, open_webpage: bool, alias=None, **kwargs: Any):
+        self.open_webpage = open_webpage
         page = Page(source=pywikibot.Site(), title="Template:" + template_name)
         pages = get_links_in_template(page)
         template_names = [p.title(with_ns=False) for p in page.redirects(namespaces="Template")]
@@ -41,7 +43,7 @@ class TemplateAdderBot(SingleSiteBot):
             return
         parsed = wtp.parse(page.text)
         if len(find_templates(parsed.templates, *template_names, loose=False)):
-            get_logger().info("Template " + template + " already exists on " + page.title())
+            pywikibot.output("Template " + template + " already exists on " + page.title())
             return
         sections = list(parsed.sections)
         target = -1
@@ -63,12 +65,22 @@ class TemplateAdderBot(SingleSiteBot):
         else:
             sections[target - 1].string = adjust_trailing_newline(sections[target - 1].string) + \
                                           "{{" + template + "}}\n\n"
-        webbrowser.open(page.full_url())
+        if self.open_webpage:
+            webbrowser.open(page.full_url())
         self.userPut(page, page.text, parsed.string, summary="批量添加[[T:" + template + "]]",
-                     watch="watch", botflag=True, tags="Automation tool")
+                     **get_default_save_params(), asynchronous=True)
 
 
 def add_template():
-    name = sys.argv[2]
-    bot = TemplateAdderBot(name)
+    parser = ArgumentParser()
+    parser.add_argument("-o", "--open", dest="open", action="store_true",
+                        help="Open the target page in a browser before an edit is made. ")
+    parser.add_argument("-n", "--name", nargs=1, type=str, required=True,
+                        help="Name of template to process.")
+    parser.add_argument("-a", "--alias", dest="alias", nargs="*",
+                        help="Aliases of this template. The program automatically detects"
+                             "redirects, but cannot automatically perform conversions between"
+                             "traditional and simplified Chinese. ")
+    args = parser.parse_args(sys.argv[2:])
+    bot = TemplateAdderBot(args.name[0], open_webpage=args.open, alias=args.alias)
     bot.run()

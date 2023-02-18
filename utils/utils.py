@@ -3,7 +3,7 @@ import signal
 import time
 import urllib.parse
 from datetime import datetime, timedelta, timezone
-from typing import List, Set, Iterable
+from typing import List, Set, Iterable, Callable, Optional
 
 import wikitextparser as wtp
 from pywikibot import Page, Site
@@ -31,17 +31,26 @@ def is_empty(s: str) -> bool:
     return s is None or len(s) == 0 or s.isspace()
 
 
-def find_templates(templates: List[Template], *names, loose: bool = False) -> List[Template]:
+def find_templates(templates: List[Template],
+                   *names,
+                   predicate: Optional[Callable] = None,
+                   loose: bool = False) -> List[Template]:
+    if predicate is None:
+        def compare_name(name):
+            for candidate in names:
+                if str_equal(name, candidate) or \
+                        (loose and (str_contains(candidate, name) or str_contains(name, candidate))):
+                    return True
+            return False
+
+        predicate = compare_name
     result = []
     for t in templates:
         template_name = t.name
         if ':' in template_name and re.search("[Tt](emplate)?:", template_name) is not None:
             template_name = template_name.split(":")[1]
-        for target in names:
-            if str_equal(template_name, target) or \
-                    (loose and (str_contains(target, template_name) or str_contains(template_name, target))):
-                result.append(t)
-                break
+        if predicate(template_name):
+            result.append(t)
     return result
 
 
@@ -218,7 +227,7 @@ CST: timezone = timezone(offset=timedelta(hours=8))
 
 
 def parse_time(timestamp: str, cst: bool = False) -> datetime:
-    parsed = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')\
+    parsed = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ') \
         .replace(tzinfo=timezone.utc)
     if cst:
         parsed = parsed.astimezone(CST)
