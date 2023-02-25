@@ -5,11 +5,11 @@ from typing import List, Any, Set, Optional, Tuple
 from pywikibot import Page
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import PreloadingGenerator
-from wikitextparser import parse
+from wikitextparser import parse, WikiLink
 
 from utils.sites import mgp, mirror
 from utils.user_interact import prompt_choices
-from utils.utils import generate_possible_titles
+from utils.utils import generate_possible_titles, find_templates, change_internal_link
 
 site = mgp()
 
@@ -17,35 +17,79 @@ site = mgp()
 def disambiguate_page_text(text: str, choices: List[str], replace: Set[str],
                            test: List[int] = None, page_link: str = None, page_title: str = None,
                            replacements: List[Tuple[str, str]] = None) -> Optional[str]:
-    lines = text.split("\n")
+    if replacements is None:
+        replacements = []
     text_changed = False
-    for index, line in enumerate(lines):
-        line_changed = False
-        parsed = parse(line)
-        for link in parsed.wikilinks:
-            if link.title in replace:
-                if page_link is not None and page_title is not None:
-                    print("\n" + page_title + "：" + page_link)
-                print("=" * 10 + "\n" + "\n".join(lines[index - 2:index + 3]) + "\n" + "=" * 10)
-                if test is None:
-                    choice = prompt_choices("Which link? Input 0 to skip.",
-                                            choices,
-                                            allow_zero=True)
-                else:
-                    choice = test.pop(0)
-                if choice == 0:
-                    continue
-                choice = choices[choice - 1]
-                if link.text is None:
-                    link.text = link.title
-                if replacements is not None:
+
+    def get_choice(message):
+        if page_link is not None and page_title is not None:
+            print("\n" + page_title + "：" + page_link)
+        print(message)
+        if test is None:
+            choice = prompt_choices("Which link? Input 0 to skip.",
+                                    choices,
+                                    allow_zero=True)
+        else:
+            choice = test.pop(0)
+        return choice
+
+    def change_title(link: WikiLink, title: str):
+        if link.text is None:
+            link.text = link.title
+        change_internal_link(link, new_title=title)
+
+    def disambiguate_templates():
+        nonlocal text_changed
+        parsed = parse(text)
+        templates = find_templates(parsed.templates, "VOCALOID_Chinese_Ranking/bricks",
+                                   "VOCALOID_&_UTAU_Ranking/bricks")
+        changed = False
+        for t in templates:
+            song_name = t.get_arg("曲名")
+            if song_name is None:
+                continue
+            song_name = song_name.value.strip()
+            if song_name not in replace:
+                continue
+            message = t.get_arg("时间")
+            message = "" if message is None else message.value.strip()
+            choice = get_choice(message)
+            if choice == 0:
+                continue
+            choice = choices[choice - 1]
+            if song_name in choice and song_name == choice[0:len(song_name)]:
+                t.set_arg("后缀 ", choice[len(song_name):], after="曲名")
+            else:
+                t.set_arg("条目 ", choice, after="曲名")
+            changed = True
+            text_changed = True
+            replacements.append((song_name, choice))
+        return str(parsed) if changed else text
+
+    def disambiguate_plain_links():
+        nonlocal text_changed
+        lines = text.split("\n")
+        for index, line in enumerate(lines):
+            line_changed = False
+            parsed = parse(line)
+            for link in parsed.wikilinks:
+                if link.title in replace:
+                    choice = get_choice("=" * 10 + "\n" + "\n".join(lines[index - 2:index + 3]) + "\n" + "=" * 10)
+                    if choice == 0:
+                        continue
+                    choice = choices[choice - 1]
                     replacements.append((link.title, choice))
-                link.title = choice
-                line_changed = True
-                text_changed = True
-        if line_changed:
-            lines[index] = str(parsed)
-    return "\n".join(lines) if text_changed else None
+                    change_title(link, choice)
+                    line_changed = True
+                    text_changed = True
+            if line_changed:
+                lines[index] = str(parsed)
+        return "\n".join(lines)
+
+    text = disambiguate_plain_links()
+    text = disambiguate_templates()
+
+    return text if text_changed else None
 
 
 class DisambiguateBot(SingleSiteBot):

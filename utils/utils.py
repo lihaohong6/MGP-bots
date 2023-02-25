@@ -243,3 +243,13 @@ def generate_possible_titles(filename: str) -> List[str]:
             next_list += [s + other for s in cur]
         cur = next_list
     return cur
+
+
+def change_internal_link(link: WikiLink, new_title: str = None, new_text: str = None):
+    if new_text is not None:
+        link.text = new_text.strip()
+    if new_title is not None:
+        link.title = new_title.strip()
+    if link.text == link.title:
+        del link.text
+
