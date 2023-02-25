@@ -13,6 +13,10 @@ def mirror():
     return Site(fam="mirror", code="mirror")
 
 
+def enwp():
+    return Site(fam="wikipedia", code="en")
+
+
 def get_site_by_name(name: str):
     name_to_site = {
         'mgp': mgp,

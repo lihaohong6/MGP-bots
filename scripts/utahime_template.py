@@ -112,9 +112,14 @@ def parse_page(page: Page) -> Optional[Song]:
         status = Status.LEGENDARY
     else:
         status = Status.NONE
-    date_text = song_box.get_arg("投稿时间")
-    if date_text is None:
-        date_text = song_box.get_arg("其他资料")
+    possible_args = ["投稿时间", '投稿時間', "其他资料", "其他資料"]
+    for arg in possible_args:
+        date_text = song_box.get_arg(arg)
+        if date_text is not None:
+            break
+    else:
+        print(page.title())
+        return
     dates = re.findall(r"([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})[日号]",
                        date_text.value)
     song_date = datetime(1900, 1, 1)
@@ -142,9 +147,12 @@ def song_to_link(s: Song):
         text = s.name_ja
     else:
         text = s.name_zh
+    append = ""
+    if s.cover:
+        append = "（翻）"
     if text == s.name_link or text is None or text.strip() == "":
-        return f"[[{s.name_link}]]"
-    return f"[[{s.name_link}|{auto_lj(text)}]]"
+        return f"[[{s.name_link}]]" + append
+    return f"[[{s.name_link}|{auto_lj(text)}]]" + append
 
 
 def to_navbox(songs: List[Song]) -> str:
@@ -174,8 +182,8 @@ def to_subgroup(songs: List[Song]):
 
 
 def main():
-    name = "MEIKO"
-    color = "#D80000"
+    name = "Megpoid"
+    color = "#CCFF00"
     SONG_FILE = get_data_path().joinpath("utahime_template.pickle")
     if SONG_FILE.exists():
         songs = pickle.load(open(SONG_FILE, "rb"))
