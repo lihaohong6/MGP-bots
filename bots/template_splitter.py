@@ -21,6 +21,7 @@ def template_splitter(name, aliases, limit: int = 50):
     template_names.add(name)
     template_names.update(set(aliases))
     parsed = wtp.parse(template_page.text)
+    # TODO: how about #invoke:nav|box|child and {{Navbox with collapsible groups}}
     nav_boxes = [t for t in parsed.templates
                  if t.name.lower() == 'navbox' and
                  t.get_arg("1") is not None and
@@ -28,11 +29,15 @@ def template_splitter(name, aliases, limit: int = 50):
     pages_dict: Dict[str, Page] = dict()
     changed_pages = set()
     for nav in nav_boxes:
+        # for manual navboxes that depend on a switch
         nav_section_name = re.search(r"{#switch:([^|]+)\|", str(nav))
-        if nav_section_name is None:
+        if nav_section_name is not None:
+            nav_section_name = nav_section_name.group(1)
+        else:
+            # TODO: deal with other patterns such as {{Navbox with collapsible groups}}
             print("A navbox called " + nav.name + " has no name.")
             continue
-        nav_section_name = nav_section_name.group(1)
+
         print("Processing " + nav_section_name)
         nav_pages = [Page(source=site, title=link.title)
                      for link in nav.wikilinks]
