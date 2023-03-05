@@ -132,11 +132,11 @@ class DisambiguateBot(SingleSiteBot):
 
 
 def filter_choices(choices: List[str]) -> List[str]:
-    gen = PreloadingGenerator(Page(source=site, title=c) for c in choices)
+    gen = PreloadingGenerator(generator=(Page(source=site, title=c) for c in choices))
     result = []
     for p in gen:
-        if p.text.strip() != "" and p.text[0] == '#' and p.isRedirectPage():
-            p = p.getRedirectTarget()
+        if p.exists() and p.text[0] == '#':
+            p = p.getRedirectTarget() if p.isRedirectPage() else p
         result.append(p.title())
     return result
 
@@ -153,8 +153,8 @@ def get_disambiguation_choices(text: str) -> List[str]:
         links = parsed.wikilinks
         if len(links) == 0:
             continue
-        if Page(source=site, title=links[0].title).namespace().id != 0:
-            continue
+        # if Page(source=site, title=links[0].title).namespace().id != 0:
+        #     continue
         choices.append(links[0].title.strip())
     choices = filter_choices(choices)
     return choices
