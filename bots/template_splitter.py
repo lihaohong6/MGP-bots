@@ -21,15 +21,21 @@ def template_splitter(name, aliases, limit: int = 50):
                          for p in template_page.redirects(namespaces="Template"))
     # 添加模板名本身
     template_names.add(name)
-    # 添加alias中其它不是重定向的模板名（如简繁转换）
+    # 添加aliases中其它不是重定向的模板名（如简繁转换）
     template_names.update(set(aliases))
 
     parsed = wtp.parse(template_page.text)
     # TODO: how about #invoke:nav|box|child and {{Navbox with collapsible groups}}
+    # {{navbox|child}}模式
     nav_boxes = [t for t in parsed.templates
                  if t.name.lower() == 'navbox' and
                  t.get_arg("1") is not None and
                  t.get_arg("1").value.strip() == 'child']
+    if len(nav_boxes) == 0:
+        # {{#invoke:nav|box|child}}模式
+        nav_boxes = [f for f in parsed.parser_functions
+                     if "invoke" in f.name
+                     and [arg.value.strip() for arg in f.arguments[0:3]] == ['nav', 'box', 'child']]
     pages_dict: Dict[str, Page] = dict()
     changed_pages = set()
     for nav in nav_boxes:
@@ -47,7 +53,7 @@ def template_splitter(name, aliases, limit: int = 50):
         # 获取当前部分的所有内部链接以便处理它们
         nav_pages = [Page(source=site, title=link.title)
                      for link in nav.wikilinks]
-        # 预加载这些页面
+        # 预加载这些内部链接的目标页面
         gen = PreloadingGenerator(nav_pages)
         process_navbox_pages(changed_pages, gen, nav_section_name, pages_dict, template_names)
     save_changed_pages(changed_pages, limit, pages_dict)
