@@ -22,6 +22,7 @@ from bots.recent_changes import patrol_recent_changes
 from bots.template_adder import add_template
 from bots.commons_cat import commons_cat
 from bots.template_splitter import run_template_splitter
+from utils import login
 from utils.config import get_data_path
 from utils.logger import setup_logger
 from utils.sites import mgp
@@ -49,6 +50,7 @@ bots: Dict[str, Callable] = {
     'mobilization_tally': run_mobilization_tally,
     "disambiguate": run_disambiguator,
     'rank_contributors': rank_contributors,
+    'login': login.main,
     "test": test
 }
 

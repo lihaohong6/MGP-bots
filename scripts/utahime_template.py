@@ -37,13 +37,20 @@ class Song:
     status: Status
 
 
-site = mirror()
+site = mgp()
+err_file = get_data_path().joinpath("utahime_err.txt")
+
+
+def err(text):
+    with open(err_file, "a") as f:
+        f.write(text)
+        f.write("\n")
 
 
 def get_temple_songs(color):
     result = []
-    for year in range(2007, 2023):
-        page = Page(source=site, title=f"VOCALOID殿堂曲/{year}年投稿")
+    pages = (Page(source=site, title=f"VOCALOID殿堂曲/{year}年投稿") for year in range(2007, 2023))
+    for page in PreloadingGenerator(pages):
         parsed = parse(page.text)
         songs = find_templates(parsed.templates, "Temple Song")
         for s in songs:
@@ -69,23 +76,23 @@ def get_temple_songs(color):
     gen = PreloadingGenerator(Page(source=site, title=s.name_link) for s in result)
     ret = []
     for index, page in enumerate(gen):
+        song = result[index]
         p = parse_page(page)
         if p is not None:
-            ret.append(p)
-        else:
-            ret.append(result[index])
+            song.name_ja = p.name_ja
+        ret.append(song)
     return ret
 
 
 def parse_page(page: Page) -> Optional[Song]:
-    if page.text.strip() == "":
+    if not page.exists():
         return None
     if page.text[0] == '#' and page.isRedirectPage():
         page = page.getRedirectTarget()
     parsed = parse(page.text)
     song_boxes = find_templates(parsed.templates, "VOCALOID_Songbox")
     if len(song_boxes) == 0:
-        print(page.title())
+        err(page.title())
         return None
     song_box = song_boxes[0]
     names = song_box.get_arg("歌曲名称").value
@@ -118,7 +125,7 @@ def parse_page(page: Page) -> Optional[Song]:
         if date_text is not None:
             break
     else:
-        print(page.title())
+        err(page.title())
         return
     dates = re.findall(r"([0-9]{4})年([0-9]{1,2})月([0-9]{1,2})[日号]",
                        date_text.value)
@@ -182,20 +189,23 @@ def to_subgroup(songs: List[Song]):
 
 
 def main():
-    name = "Megpoid"
-    color = "#CCFF00"
+    name = "镜音连"
+    color = "#FFF000"
     SONG_FILE = get_data_path().joinpath("utahime_template.pickle")
     if SONG_FILE.exists():
         songs = pickle.load(open(SONG_FILE, "rb"))
     else:
         result = get_temple_songs(color) + get_songs_in_cat(name)
         result = [s for s in result if s is not None]
-        existing = set()
+        existing = dict()
         songs = []
         for s in result:
-            if s.name_link not in existing:
-                existing.add(s.name_link)
-                songs.append(s)
+            if s.name_link in existing:
+                date = existing[s.name_link].date
+                if (date - s.date).total_seconds() < 3600 * 48:
+                    continue
+            existing[s.name_link] = s
+            songs.append(s)
         pickle.dump(songs, open(SONG_FILE, "wb"))
     print(to_navbox(songs))
 
