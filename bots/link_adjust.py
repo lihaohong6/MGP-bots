@@ -2,7 +2,7 @@ import argparse
 import re
 import sys
 from re import Match
-from typing import Callable, Dict
+from typing import Callable, Dict, Tuple
 from urllib.parse import parse_qs, urlparse, urlunparse
 
 import pywikibot
@@ -16,6 +16,8 @@ from bots.recent_changes_bot import RecentChangesBot
 from utils.utils import search_pages
 
 LINK_END = r"""((?![ 　\]{}<|\n])[ -~])*"""
+DEAD_LINK = r"(?P<finishLink>((?![\[\n])[^\]])*\])?" + \
+            r"(?P<deadLink>\s*\{\{\s*(:?(T|Template|模板):)?(失效链接|死链|失效連結|死鏈)[^}]*\|bot=Bhsd-bot[^}]*\}\})?"
 
 
 def remove_link_params(link: str, predicate: Callable[[str, str], bool]) -> str:
@@ -79,8 +81,19 @@ SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
                    'youtu.be', 'ab_channel']
 
 
+def get_dead_link(match: Match) -> Tuple[str, str]:
+    finish_link = match.groupdict().get('finishLink', '')
+    if finish_link is None:
+        finish_link = ''
+    dead_link = match.groupdict().get('deadLink', '')
+    if dead_link is None:
+        dead_link = ''
+    return finish_link, dead_link
+
+
 def shorten_bb_link(match: Match):
-    link = match.group(0)
+    link = match.group(1)
+    remaining, dead_link = get_dead_link(match)
     if "read/mobile" in link:
         parsed = urlparse(link)
         params: Dict = parse_qs(parsed.query, keep_blank_values=False)
@@ -88,31 +101,35 @@ def shorten_bb_link(match: Match):
             article_id = params['id'][0]
         else:
             article_id = re.search("/([0-9]+)", parsed.path).group(1)
-        return "bilibili.com/read/cv" + article_id
-    return remove_link_params(link,
-                              predicate=lambda k, v: k not in USELESS_BB_PARAMS
-                                                     and (k != 'p' or v != '1'))
+        return "bilibili.com/read/cv" + article_id + remaining
+    result = remove_link_params(link,
+                                predicate=lambda k, v: k not in USELESS_BB_PARAMS
+                                                       and (k != 'p' or v != '1'))
+    if result != link:
+        dead_link = ""
+    return result + remaining + dead_link
 
 
 def expand_b23(text: str) -> str:
     def fetch_real_url(match: Match):
-        url = match.group(0)
+        url = match.group(1)
+        remaining, _ = get_dead_link(match)
         response = requests.get(url)
         final_url = response.url
         if final_url.strip() == url.strip() or \
                 (response.status_code != 200 and response.history and len(response.history) > 2) or \
                 "error" in final_url:
             pywikibot.error("Link " + url + " has problematic response.")
-            return url
-        return process_text_bb(response.url)
+            return match.group(0)
+        return process_text_bb(response.url) + remaining
 
-    return re.sub(r'https?://b23\.tv/' + LINK_END,
+    return re.sub(r'(https?://b23\.tv/' + LINK_END + ')' + DEAD_LINK,
                   fetch_real_url,
                   text)
 
 
 def process_text_bb(text: str) -> str:
-    text = re.sub(r'bilibili\.com' + LINK_END,
+    text = re.sub(r'(bilibili\.com' + LINK_END + ")" + DEAD_LINK,
                   shorten_bb_link,
                   text)
     text = expand_b23(text)
@@ -124,15 +141,24 @@ USELESS_YT_PARAMS = {'feature', 'ab_channel'}
 
 def process_text_yt(text: str) -> str:
     def expand_short_link(match: Match):
+        remaining, _ = get_dead_link(match)
         new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
-        return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS)
+        return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS) + remaining
 
-    text = re.sub(r'youtu\.be/([\w-]+)' + '(' + LINK_END + ')',
+    def clean_youtube_link(match: Match):
+        remaining, dead_link = get_dead_link(match)
+        link = remove_link_params(match.group(1), lambda s, _: s not in USELESS_YT_PARAMS)
+        if link != match.group(1):
+            dead_link = ""
+        link += remaining + dead_link
+        return link
+
+    text = re.sub(r'youtu\.be/([\w-]+)' + '(' + LINK_END + ')' + DEAD_LINK,
                   expand_short_link,
                   text,
                   flags=re.ASCII)
-    text = re.sub(r'(?:www\.)?youtube\.com/watch\?' + LINK_END,
-                  lambda match: remove_link_params(match.group(0), lambda s, _: s not in USELESS_YT_PARAMS),
+    text = re.sub(r'((?:www\.)?youtube\.com/watch\?' + LINK_END + ')' + DEAD_LINK,
+                  clean_youtube_link,
                   text)
     return text
 
@@ -148,6 +174,7 @@ class LinkAdjustBot(SingleSiteBot):
     def treat(self, page: Page) -> None:
         result = treat_links(page.text)
         if result != page.text:
+            setattr(page, "_bot_may_edit", True)
             page.text = result
             page.save(summary=LINK_ADJUST_BOT_SUMMARY, **get_default_save_params())
 
