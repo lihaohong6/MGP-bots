@@ -8,6 +8,7 @@ from pywikibot import Page, FilePage
 from pywikibot.bot import SingleSiteBot
 from pywikibot.pagegenerators import GeneratorFactory, PreloadingGenerator
 
+from utils.config import get_default_save_params
 from utils.sites import mgp, cm
 from utils.utils import generate_possible_titles
 
@@ -41,7 +42,9 @@ class MoveImageBot(SingleSiteBot):
         self.processed.add(page.title())
         prev = page.text
         text, _ = re.subn(self.from_pattern, self.image_to, page.text)
-        self.userPut(page, prev, text, tags="Automation tool", summary=self.summary, watch="nochange")
+        setattr(page, "_bot_may_edit", True)
+        self.userPut(page, prev, text, **get_default_save_params(), tags="Automation tool", summary=self.summary,
+                     asynchronous=True)
 
 
 def move_image():

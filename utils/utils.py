@@ -253,3 +253,7 @@ def change_internal_link(link: WikiLink, new_title: str = None, new_text: str = 
     if link.text == link.title:
         del link.text
 
+
+def subtract(original: Iterable[Page], remove: Iterable[Page]):
+    remove_set = set(p.title() for p in remove)
+    return (p for p in original if p.title() not in remove_set)
