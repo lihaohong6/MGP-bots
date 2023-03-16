@@ -106,14 +106,14 @@ def shorten_bb_link(match: Match):
                                 predicate=lambda k, v: k not in USELESS_BB_PARAMS
                                                        and (k != 'p' or v != '1'))
     if result != link:
-        dead_link = ""
+        dead_link = dead_link.replace("|bot=Bhsd-bot", "")
     return result + remaining + dead_link
 
 
 def expand_b23(text: str) -> str:
     def fetch_real_url(match: Match):
         url = match.group(1)
-        remaining, _ = get_dead_link(match)
+        remaining, dead_link = get_dead_link(match)
         response = requests.get(url)
         final_url = response.url
         if final_url.strip() == url.strip() or \
@@ -121,7 +121,7 @@ def expand_b23(text: str) -> str:
                 "error" in final_url:
             pywikibot.error("Link " + url + " has problematic response.")
             return match.group(0)
-        return process_text_bb(response.url) + remaining
+        return process_text_bb(response.url) + remaining + dead_link.replace("|bot=Bhsd-bot", "")
 
     return re.sub(r'(https?://b23\.tv/' + LINK_END + ')' + DEAD_LINK,
                   fetch_real_url,
@@ -141,15 +141,16 @@ USELESS_YT_PARAMS = {'feature', 'ab_channel'}
 
 def process_text_yt(text: str) -> str:
     def expand_short_link(match: Match):
-        remaining, _ = get_dead_link(match)
+        remaining, dead_link = get_dead_link(match)
         new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
-        return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS) + remaining
+        return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS) + remaining + \
+               dead_link.replace("|bot=Bhsd-bot", "")
 
     def clean_youtube_link(match: Match):
         remaining, dead_link = get_dead_link(match)
         link = remove_link_params(match.group(1), lambda s, _: s not in USELESS_YT_PARAMS)
         if link != match.group(1):
-            dead_link = ""
+            dead_link = dead_link.replace("|bot=Bhsd-bot", "")
         link += remaining + dead_link
         return link
 

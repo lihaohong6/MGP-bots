@@ -7,21 +7,21 @@ class TestLinkAdjust(TestCase):
     def test_dead_link_remove(self):
         url = "[https://www.bilibili.com/video/BV1bW4y1q79d?spm_id_from=1 链接] \n{{死链|bot=Bhsd-bot|date=123}}AAA"
         self.assertEqual(
-            "[https://www.bilibili.com/video/BV1bW4y1q79d 链接]AAA",
+            "[https://www.bilibili.com/video/BV1bW4y1q79d 链接] \n{{死链|date=123}}AAA",
             process_text_bb(url))
         url = "https://www.bilibili.com/video/BV1bW4y1q79d?spm_id_from=1{{死链|date=abc|bot=Bhsd-bot}}"
         self.assertEqual(
-            "https://www.bilibili.com/video/BV1bW4y1q79d",
+            "https://www.bilibili.com/video/BV1bW4y1q79d{{死链|date=abc}}",
             process_text_bb(url)
         )
         url = "[https://youtu.be/h-FccHqdLV0?t=81 油管视频]{{失效連結|bot=Bhsd-bot}}"
         self.assertEqual(
-            "[https://www.youtube.com/watch?v=h-FccHqdLV0&t=81 油管视频]",
+            "[https://www.youtube.com/watch?v=h-FccHqdLV0&t=81 油管视频]{{失效連結}}",
             process_text_yt(url)
         )
         url = "https://b23.tv/t8BP0j {{失效链接|bot=Bhsd-bot}}"
         self.assertEqual(
-            "https://www.bilibili.com/video/BV1AV411h7jb",
+            "https://www.bilibili.com/video/BV1AV411h7jb {{失效链接}}",
             process_text_bb(url)
         )
 
