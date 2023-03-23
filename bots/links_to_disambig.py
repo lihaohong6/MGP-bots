@@ -147,7 +147,7 @@ def run_links_to_disambig():
     parser.add_argument("-f", "--filter", dest="filter", type=str,
                         help="Page categories to use. Separated by commas.")
     args = parser.parse_args(args)
-    target_page = args.target
+    target_page = args.target[0]
     disambig_pages = list(get_disambig_pages())
     print("All disambig pages fetched.")
     categories = categorize(disambig_pages)
