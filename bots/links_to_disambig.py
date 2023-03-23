@@ -141,9 +141,9 @@ def categorize(pages: List[Page]) -> Dict[str, List[Page]]:
 
 def run_links_to_disambig():
     site.login()
-    args = sys.argv[2]
+    args = sys.argv[2:]
     parser = ArgumentParser()
-    parser.add_argument("target", nargs=1, help="The target page.", type=str)
+    parser.add_argument("target", nargs=1, help="The target page.", positional=True,type=str)
     parser.add_argument("-f", "--filter", dest="filter", type=str,
                         help="Page categories to use. Separated by commas.")
     args = parser.parse_args(args)
