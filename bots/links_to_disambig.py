@@ -1,4 +1,5 @@
 import sys
+from argparse import ArgumentParser
 from typing import Dict, List
 
 from pywikibot import Page, APISite
@@ -140,16 +141,23 @@ def categorize(pages: List[Page]) -> Dict[str, List[Page]]:
 
 def run_links_to_disambig():
     site.login()
-    if len(sys.argv) < 3:
-        print("Please input target page title.")
-        return
-    target_page = sys.argv[2]
+    args = sys.argv[2]
+    parser = ArgumentParser()
+    parser.add_argument("target", nargs=1, help="The target page.", type=str)
+    parser.add_argument("-f", "--filter", dest="filter", type=str,
+                        help="Page categories to use. Separated by commas.")
+    args = parser.parse_args(args)
+    target_page = args.target
     disambig_pages = list(get_disambig_pages())
     print("All disambig pages fetched.")
     categories = categorize(disambig_pages)
     print("All pages categorized by initials.")
+    valid_categories = categories.keys() if args.filter is None else set(args.filter.split(","))
     for page_name, pages in categories.items():
-        print("Processing " + page_name)
+        if page_name in valid_categories:
+            print("Processing " + page_name)
+        else:
+            print("Skipping " + page_name)
         page = Page(source=site, title=target_page + "/" + page_name)
         page.text = adjust_trailing_newline(create_wiki_table(pages), 2) + "[[Category:萌娘百科数据报告]]"
         page.save(summary="更新列表", botflag=True, tags="Bot")
