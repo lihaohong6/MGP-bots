@@ -158,6 +158,7 @@ def run_links_to_disambig():
             print("Processing " + page_name)
         else:
             print("Skipping " + page_name)
+            continue
         page = Page(source=site, title=target_page + "/" + page_name)
         page.text = adjust_trailing_newline(create_wiki_table(pages), 2) + "[[Category:萌娘百科数据报告]]"
         page.save(summary="更新列表", botflag=True, tags="Bot")
