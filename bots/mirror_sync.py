@@ -39,7 +39,7 @@ class RCDownloadBot(RecentChangesBot):
         if change['type'] == 'log' and change['logaction'] == 'move' and change['logparams']['target_ns'] != 2:
             page.move(change['logparams']['target_title'])
         title = page.title(with_ns=True)
-        if title in self.white_list:
+        if title in self.white_list or "<noinclude>{{即将删除|1=" in page.text:
             return
         pywikibot.output("Writing file for page " + title)
         page_id = page.pageid
