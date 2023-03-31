@@ -67,7 +67,11 @@ USELESS_BB_PARAMS = {
     # https://b23.tv/HNeNlxa
     'buvid', 'up_id',
     # https://b23.tv/QP7RG2Q
-    'plat_id'
+    'plat_id',
+    # from Bilibili-evolved
+    'rt', 'tdsourcetag', 'accept_quality', 'current_qn', 'current_quality', 'playurl_h264', 'playurl_h265',
+    'quality_description', 'network', 'network_status', 'platform_network_status', 'p2p_type', 'visit_id', 'bsource',
+    'spm', 'hotRank', '-Arouter', 'type', 'session_id', 'theme'
 }
 
 SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
@@ -144,7 +148,7 @@ def process_text_yt(text: str) -> str:
         remaining, dead_link = get_dead_link(match)
         new_url = "www.youtube.com/watch?v=" + match.group(1) + match.group(2).replace("?", "&")
         return remove_link_params(new_url, lambda s, _: s not in USELESS_YT_PARAMS) + remaining + \
-               dead_link.replace("|bot=Bhsd-bot", "")
+            dead_link.replace("|bot=Bhsd-bot", "")
 
     def clean_youtube_link(match: Match):
         remaining, dead_link = get_dead_link(match)
@@ -218,3 +222,16 @@ def link_adjust_test():
     sandbox = Page(source=mgp(), title="Help:沙盒")
     sandbox.text = treat_links(sandbox.text)
     sandbox.save(summary=LINK_ADJUST_BOT_SUMMARY + "（测试）", **get_default_save_params())
+
+
+def params_test():
+    external_params = \
+        ['spm_id_from', 'from_source', 'from_spmid', 'from', 'seid', 'share_source', 'share_medium', 'share_plat',
+         'share_tag', 'share_session_id', 'share_from', 'bbid', 'ts', 'timestamp', 'unique_k', 'rt', 'tdsourcetag',
+         'accept_quality', 'broadcast_type', 'current_qn', 'current_quality', 'playurl_h264', 'playurl_h265',
+         'quality_description', 'network', 'network_status', 'platform_network_status', 'p2p_type', 'referfrom',
+         'visit_id', 'bsource', 'spm', 'hotRank', '-Arouter', 'vd_source', 'is_story_h5', 'buvid', 'type',
+         'session_id', 'theme', 'mid', 'up_id']
+    for p in external_params:
+        if p not in USELESS_BB_PARAMS:
+            print(p)
