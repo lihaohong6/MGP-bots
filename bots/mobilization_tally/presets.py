@@ -37,7 +37,7 @@ def vj_create_song(contribution):
     page: Page = contribution['page']
     if not is_vj_song(page):
         return None
-    return page.title(as_link=True, allow_interwiki=False) + "（+1.5）"
+    return page.title(as_link=True, allow_interwiki=False) + "（+1）"
 
 
 def vj_create_producer_template(contribution):
@@ -49,7 +49,7 @@ def vj_create_producer_template(contribution):
         links = set(get_links_in_template(page))
         links = [Page(source=get_site(), title=link) for link in links]
         links_count = len(list(p for p in links if p.namespace().id == 0))
-        score = links_count / 10
+        score = links_count / 15
         return page.title(as_link=True, allow_interwiki=False) + f"（+{score}）（{links_count}个链接）"
 
 
@@ -73,7 +73,7 @@ def vj_create_producer(contribution):
     if len(list(article_cats.intersection(cats))) > 0:
         simple_count = count_bytes_simple(page.text)
         byte_count = count_bytes(page.text)
-        return f"{page.title(as_link=True, allow_interwiki=False)}（+{adjust(byte_count / 200)}）" \
+        return f"{page.title(as_link=True, allow_interwiki=False)}（+{adjust(byte_count / 300)}）" \
                f"（{simple_count}字节，调整后为{byte_count}字节）"
 
 
@@ -153,7 +153,7 @@ def vj_translate(contribution):
         if translation is None:
             continue
         byte_count = count_bytes_simple(translation.value)
-        results.append(f"（+{adjust(byte_count / 150)}）（{byte_count}字节）")
+        results.append(f"（+{adjust(byte_count / 200)}）（{byte_count}字节）")
     if len(results) > 0:
         return page.title(as_link=True, allow_interwiki=False) + "".join(results)
 
@@ -164,7 +164,7 @@ def vj_vocaran(contribution):
     page: Page = contribution['page']
     cats = get_categories(page)
     if '周刊VOCAL Character & UTAU排行榜' in cats:
-        return page.title(as_link=True, allow_interwiki=False) + "（+20）"
+        return page.title(as_link=True, allow_interwiki=False) + "（+30）"
 
 
 Preset = Dict[str, Callable[[Dict], Optional[str]]]
