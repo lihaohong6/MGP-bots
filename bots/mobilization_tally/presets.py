@@ -50,7 +50,7 @@ def vj_create_producer_template(contribution):
         links = [Page(source=get_site(), title=link) for link in links]
         links_count = len(list(p for p in links if p.namespace().id == 0))
         score = links_count / 15
-        return page.title(as_link=True, allow_interwiki=False) + f"（+{score}）（{links_count}个链接）"
+        return page.title(as_link=True, allow_interwiki=False) + f"（+{adjust(score)}）（{links_count}个链接）"
 
 
 article_cats = {
