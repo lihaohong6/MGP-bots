@@ -39,4 +39,4 @@ def count_bytes(text: str) -> int:
         for found in find_templates(parsed.templates, t):
             template_bytes += count_bytes_simple(str(found))
         subtract.append(template_bytes)
-    return round(initial - sum(subtract) / 4)
+    return round(initial - sum(subtract) * 3 / 4)
