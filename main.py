@@ -14,6 +14,7 @@ from bots.isbn import isbn_adjust
 from bots.link_adjust import link_adjust
 from bots.links_to_disambig import links_to_disambig
 from bots.deprecated.mass_cat import mass_cat
+from bots.mirror_image_sync import mirror_image_sync
 from bots.mirror_sync import mirror_sync
 from bots.mobilization_tally.mobilization_tally import run_mobilization_tally
 from bots.move_image import move_image
@@ -50,6 +51,7 @@ bots: Dict[str, Callable] = {
     'mobilization_tally': run_mobilization_tally,
     "disambiguate": run_disambiguator,
     'rank_contributors': rank_contributors,
+    'mirror_image_sync': mirror_image_sync,
     'login': login.main,
     "test": test
 }
