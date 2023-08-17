@@ -97,7 +97,7 @@ def get_user_contributions(username: str, last_update: Dict) -> list:
             'timestamp': parse_time(c['timestamp'], cst=True),
             'new': 'new' in c,
             'minor': 'minor' in c,
-            'comment': c['comment'],
+            'comment': c.get('comment', ''),
             'revid': c['revid']
         }
         for c in site.usercontribs(user=username, total=500)]
