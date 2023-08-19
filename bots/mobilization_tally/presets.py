@@ -23,7 +23,7 @@ def is_vj_song(page: Page):
     categories = get_categories(page)
     engines = {'使用VOCALOID的歌曲', '使用UTAU的歌曲', '使用CeVIO的歌曲', '使用初音未来 NT的歌曲', '使用DeepVocal的歌曲', '使用MAIDLOID的歌曲',
                '使用MUTA的歌曲', '使用NEUTRINO的歌曲', '使用袅袅虚拟歌手的歌曲', '使用Sharpkey的歌曲', '使用Synthesizer V的歌曲', '使用VOICEROID的歌曲',
-               '使用VOICEVOX的歌曲', '使用VocalSharp的歌曲', '使用X Studio的歌曲'}
+               '使用VOICEVOX的歌曲', '使用VocalSharp的歌曲', '使用X Studio的歌曲', '使用VOICEPEAK的歌曲'}
     if len(categories.intersection(engines)) == 0:
         return False
     parsed = wtp.parse(page.text)
