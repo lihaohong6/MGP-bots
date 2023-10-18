@@ -71,7 +71,9 @@ USELESS_BB_PARAMS = {
     # from Bilibili-evolved
     'rt', 'tdsourcetag', 'accept_quality', 'current_qn', 'current_quality', 'playurl_h264', 'playurl_h265',
     'quality_description', 'network', 'network_status', 'platform_network_status', 'p2p_type', 'visit_id', 'bsource',
-    'spm', 'hotRank', '-Arouter', 'type', 'session_id', 'theme'
+    'spm', 'hotRank', '-Arouter', 'type', 'session_id', 'theme',
+    # from User:Func
+    "spmid"
 }
 
 SEARCH_KEYWORDS = ['spm_id_from', 'b23.tv',
