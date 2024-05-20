@@ -10,7 +10,7 @@ from threading import Thread
 from pywikibot import Page, APISite, FilePage
 from pywikibot.data.api import QueryGenerator
 
-from utils.sites import mirror, cm
+from utils.sites import mirror, icu, cm, icu_cm
 
 
 def should_download(page_title: str) -> bool:
@@ -33,18 +33,19 @@ def process_batch(page_list: list):
             except Empty:
                 return
             try:
-                s.upload(filepage=FilePage(source=s, title=page['title']),
-                         source_url=page['url'],
+                page: FilePage
+                s.upload(filepage=FilePage(source=s, title=page.title(with_ns=True)),
+                         source_url=page.get_file_url(),
                          comment="批量从萌娘百科搬运图片",
                          text="批量从萌娘百科搬运图片",
                          report_success=True,
-                         ignore_warnings=True)
+                         ignore_warnings=False)
             except Exception as e:
-                print(page['title'])
+                print(page.title(with_ns=True))
                 print(e)
 
     workers = []
-    for _ in range(5):
+    for _ in range(1):
         t = Thread(target=upload_worker)
         t.start()
         workers.append(t)
@@ -55,13 +56,13 @@ def process_batch(page_list: list):
 def upload_files_from_commons(exclude: set):
     cont = Path("data/download_images_page_list_cont.txt")
     if not cont.exists():
-        start = 'File:!'
+        start = '!'
     else:
         start = open(cont, "r").read()
     print("Continue from", start)
-    pages_gen = QueryGenerator(site=cm(), list='allimages', aifrom=start, aiprop='url|canonicaltitle',
-                               aimime='image/svg+xml|image/png|image/jpeg|image/gif|image/webp', ailimit=500)
-    pages_gen = (p for p in pages_gen if p['name'] not in exclude)
+    s: APISite = icu_cm()
+    pages_gen = s.allpages(namespace=6, start=start)
+    pages_gen = (p for p in pages_gen if p.title(with_ns=True) not in exclude and should_download(p.title()))
     page_list = []
     for p in pages_gen:
         page_list.append(p)
@@ -69,17 +70,26 @@ def upload_files_from_commons(exclude: set):
             process_batch(page_list)
             page_list = []
             with open(cont, "w") as f:
-                f.write(p['title'])
+                p: FilePage
+                f.write(p.title(underscore=True))
     process_batch(page_list)
     cont.unlink(missing_ok=True)
 
 
+# def get_mirror_file_list() -> set:
+#     s = mirror()
+#     pages_gen = s.allpages(namespace=6, start="!")
+#     page_list = set()
+#     for p in pages_gen:
+#         p: Page
+#         page_list.add(p.title(underscore=True))
+#     return page_list
+
 def get_mirror_file_list() -> set:
-    pages_gen = QueryGenerator(site=mirror(), list='allimages', aifrom='!', aiprop='url|canonicaltitle',
-                               aimime='image/svg+xml|image/png|image/jpeg|image/gif|image/webp', ailimit=500)
+    pages_gen = QueryGenerator(site=mirror(), list='allpages', apfrom='!', aplimit=500, apnamespace=6)
     page_list = set()
     for p in pages_gen:
-        page_list.add(p['name'])
+        page_list.add(p['title'])
     return page_list
 
 
